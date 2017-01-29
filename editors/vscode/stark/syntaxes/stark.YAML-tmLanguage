@@ -1,0 +1,126 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+name: Stark
+scopeName: source.stark
+fileTypes: [sk]
+uuid: 582789B5-991D-49E1-8E39-54327B3DBDFF
+
+patterns:
+- include: '#comment'
+- include: '#keywords'
+- include: '#builtin-types'
+- include: '#visibility-modifiers'
+- include: '#type-declarations'
+- include: '#keywords'
+- include: '#literals'
+
+repository:
+  builtin-types:
+    match: \b(bool|char8|char16|char32|float64|float32|int64|int32|int16|int8|uint64|uint32|uint16|uint8|intz|uintz|isize|usize|intptr|uintptr|object|str8|str16|str32)\b
+    captures:
+      '1': {name: keyword.type.sk}
+  visibility-modifiers:
+    name: storage.modifier.sk
+    match: (?<!\.)\b(new|public|protected|internal|private|abstract|virtual|override|sealed|static|partial|readonly|volatile|immutable|mutable|const|extern|async|unsafe|transient|isolated|scoped)\b
+  type-declarations:
+    patterns:
+    - name: keyword.other.class.sk
+      match: \bclass\b
+    - name: keyword.other.struct.sk
+      match: \bstruct\b
+    - name: keyword.other.trait.sk
+      match: \btrait\b
+    - name: keyword.other.enum.sk
+      match: \benum\b
+  keywords:
+    name: keyword.type.sk
+    match: \b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b
+  comment:
+    patterns:
+    - name: comment.block.sk
+      begin: /\*
+      beginCaptures:
+        '0': {name: punctuation.definition.comment.sk}
+      end: \*/
+      endCaptures:
+        '0': {name: punctuation.definition.comment.sk}
+    - begin: (^\s+)?(?=//)
+      beginCaptures:
+        '1': {name: punctuation.whitespace.comment.leading.sk}
+      end: (?=$)
+      patterns:
+      - name: comment.block.documentation.sk
+        begin: (?<!/)///(?!/)
+        beginCaptures:
+          '0': {name: punctuation.definition.comment.sk}
+        end: (?=$)
+        patterns:
+        - include: '#xml-doc-comment'
+      - name: comment.line.double-slash.sk
+        begin: (?<!/)//(?!/)
+        beginCaptures:
+          '0': {name: punctuation.definition.comment.sk}
+        end: (?=$)
+  literals:
+    patterns:
+      - include: '#numeric-literal'
+      - include: '#char-literal'
+      - include: '#string-literal'
+      - include: '#verbatim-string-literal'
+
+  numeric-literal:
+    patterns:
+    - name: constant.numeric.hex.sk
+      match: \b0(x|X)[0-9a-fA-F_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b
+    - name: constant.numeric.binary.sk
+      match: \b0(b|B)[01_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b
+    - name: constant.numeric.decimal.sk
+      match: \b([0-9_]+)?\.[0-9_]+((e|E)[0-9]+)?(F|f|D|d|M|m)?\b
+    - name: constant.numeric.decimal.sk
+      match: \b[0-9_]+(e|E)[0-9_]+(F|f|D|d|M|m)?\b
+    - name: constant.numeric.decimal.sk
+      match: \b[0-9_]+(F|f|D|d|M|m)\b
+    - name: constant.numeric.decimal.sk
+      match: \b[0-9_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b
+ 
+  char-literal:
+    name: string.quoted.single.sk
+    begin: ''''
+    beginCaptures:
+      '0': {name: punctuation.definition.char.begin.sk}
+    end: (\')|((?:[^\\\n])$)
+    endCaptures:
+      '1': {name: punctuation.definition.char.end.sk}
+      '2': {name: invalid.illegal.newline.sk}
+    patterns:
+    - include: '#string-character-escape'
+ 
+  string-character-escape:
+    name: constant.character.escape.sk
+    match: \\.
+ 
+  string-literal:
+    name: string.quoted.double.sk
+    begin: (?<!@)"
+    beginCaptures:
+      '0': {name: punctuation.definition.string.begin.sk}
+    end: (")|((?:[^\\\n])$)
+    endCaptures:
+      '1': {name: punctuation.definition.string.end.sk}
+      '2': {name: invalid.illegal.newline.sk}
+    patterns:
+    - include: '#string-character-escape'
+
+  verbatim-string-character-escape:
+    name: constant.character.escape.sk
+    match: '""'
+
+  verbatim-string-literal:
+    name: string.quoted.double.sk
+    begin: '@"'
+    beginCaptures:
+      '0': {name: punctuation.definition.string.begin.sk}
+    end: '"(?=[^"])'
+    endCaptures:
+      '0': {name: punctuation.definition.string.end.sk}
+    patterns:
+    - include: '#verbatim-string-character-escape'
