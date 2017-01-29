@@ -233,6 +233,13 @@ namespace Stark.Compiler.Parsing
                             break;
                         }
 
+                        if (_c == '.')
+                        {
+                            _token = new Token(TokenType.DotDotDot, start, _position);
+                            NextChar();
+                            break;
+                        }
+
                         _token = new Token(TokenType.DotDot, start, index);
                         break;
                     }

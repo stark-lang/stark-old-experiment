@@ -149,6 +149,9 @@ namespace Stark.Compiler.Parsing
         [TokenText("..")]
         DotDot,
 
+        [TokenText("...")]
+        DotDotDot,
+
         [TokenText("..<")]
         DotDotLess,
 

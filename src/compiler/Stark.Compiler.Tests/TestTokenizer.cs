@@ -65,6 +65,7 @@ namespace Stark.Compiler.Tests
                 {"||", TokenType.PipePipe},
                 {"..", TokenType.DotDot},
                 {"..<", TokenType.DotDotLess},
+                {"...", TokenType.DotDotDot},
                 {"\r", TokenType.NewLine},
                 {"\r\n", TokenType.NewLine},
                 {"\n", TokenType.NewLine},
