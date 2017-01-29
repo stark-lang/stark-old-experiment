@@ -4,7 +4,7 @@
 namespace Stark.Compiler.Parsing
 {
     /// <summary>
-    /// A UTF-32 character.
+    /// A UTF-32 character ala Stark.
     /// </summary>
     // ReSharper disable once InconsistentNaming
     public struct char32

@@ -12,12 +12,14 @@ namespace Stark.Compiler.Parsing
     /// <summary>
     /// Tokenizer enumerator that generates <see cref="Token"/>, to be used from a foreach.
     /// </summary>
-    public class Tokenizer<TReader> : IEnumerable<Token> where TReader : struct, ICharReader
+    public class Tokenizer<TReader> : IEnumerable<Token> where TReader : struct, CharacterIterator
     {
         private Token _token;
         private TextPosition _position;
+        private TextPosition _nextPosition;
         private char32 _c;
         private TextPosition? _peekPosition;
+        private TextPosition? _peekNextPosition;
         private char32? _peekC;
         private List<LogMessage> _errors;
         private int _nestedMultilineCommentCount;
@@ -787,6 +789,9 @@ namespace Stark.Compiler.Parsing
             }
         }
 
+        /// <summary>
+        /// Peeks the character next to the current one.
+        /// </summary>
         private char32 PeekChar()
         {
             if (_peekC.HasValue)
@@ -794,25 +799,43 @@ namespace Stark.Compiler.Parsing
                 return _peekC.Value;
             }
 
-            var previousPosition = _position;
+            // Save the state of the position
+            var savedPosition = _position;
+            var savedNextPosition = _nextPosition;
+
+            // Move to the next position
+            _position = _nextPosition;
             _peekC = NextCharFromReader();
+
+            // Save the peek position
             _peekPosition = _position;
-            _position = previousPosition;
+            _peekNextPosition = _nextPosition;
+
+            // Restore the position before the peek
+            _position = savedPosition;
+            _nextPosition = savedNextPosition;
+
             return _peekC.Value;
         }
 
         private void NextChar()
         {
+            // If we have any pending peek position, use it
             if (_peekPosition.HasValue)
             {
                 Debug.Assert(_peekC.HasValue);
+                Debug.Assert(_peekNextPosition.HasValue);
                 _position = _peekPosition.Value;
+                _nextPosition = _peekNextPosition.Value;
                 _c = _peekC.Value;
+                _peekNextPosition = null;
                 _peekPosition = null;
                 _peekC = null;
             }
             else
             {
+                // Else move to the next position
+                _position = _nextPosition;
                 _c = NextCharFromReader();
             }
         }
@@ -821,7 +844,26 @@ namespace Stark.Compiler.Parsing
         {
             try
             {
-                return _reader.NextChar(ref _position);
+                int position = _position.Offset;
+                var nextChar = _reader.TryGetNext(ref position);
+                _nextPosition.Offset = position;
+
+                if (nextChar.HasValue)
+                {
+                    var nextc = nextChar.Value;
+                    if (nextc == '\n')
+                    {
+                        _nextPosition.Column = 0;
+                        _nextPosition.Line += 1;
+                    }
+                    else
+                    {
+                        _nextPosition.Column++;
+                    }
+                    return nextc;
+                }
+
+                return Eof;
             }
             catch (CharReaderException ex)
             {
@@ -851,9 +893,13 @@ namespace Stark.Compiler.Parsing
 
         private void Reset()
         {
-            _c = _reader.Reset();
+            // Initialize the position at -1 when starting
+            _nextPosition = new TextPosition();
             _position = new TextPosition();
+            _c = NextCharFromReader();
+
             _token = new Token();
+            _peekNextPosition = null;
             _peekPosition = null;
             _peekC = null;
             _errors = null;

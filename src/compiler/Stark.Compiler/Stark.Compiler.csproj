@@ -44,11 +44,12 @@
     <Compile Include="Parsing\CharHelper.CharacterRanges.cs" />
     <Compile Include="Parsing\CharHelper.cs" />
     <Compile Include="Parsing\CharReaderException.cs" />
-    <Compile Include="Parsing\ICharReader.cs" />
+    <Compile Include="Parsing\CharacterIterator.cs" />
+    <Compile Include="Collections\Iterator.cs" />
     <Compile Include="Parsing\Tokenizer.cs" />
     <Compile Include="Parsing\LogMessage.cs" />
     <Compile Include="Parsing\SourceSpan.cs" />
-    <Compile Include="Parsing\StringCharReader.cs" />
+    <Compile Include="Parsing\StringCharacterIterator.cs" />
     <Compile Include="Parsing\Token.cs" />
     <Compile Include="Parsing\TokenTextAttribute.cs" />
     <Compile Include="Parsing\TokenType.cs" />

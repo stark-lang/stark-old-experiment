@@ -391,7 +391,7 @@ a single line
         {
             //           0123456 7
             var text = "10ab /\n{";
-            var lexer = new Tokenizer<StringCharReader>(new StringCharReader(text));
+            var lexer = new Tokenizer<StringCharacterIterator>(new StringCharacterIterator(text));
             Assert.False((bool)lexer.HasErrors);
             var tokens = lexer.ToList<Token>();
             Assert.AreEqual(7, tokens.Count);
@@ -415,7 +415,7 @@ a single line
 
         private List<Token> ParseTokens(string text, bool hasErrors = false)
         {
-            var lexer = new Tokenizer<StringCharReader>(new StringCharReader(text));
+            var lexer = new Tokenizer<StringCharacterIterator>(new StringCharacterIterator(text));
             var tokens = lexer.ToList(); // Force to parse all tokens
             foreach (var error in lexer.Errors)
             {
