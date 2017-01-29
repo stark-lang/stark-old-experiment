@@ -10,7 +10,7 @@ namespace Stark.Compiler.Collections
     /// <typeparam name="TState">The type of the state of the iteration.</typeparam>
     // ReSharper disable once TypeParameterCanBeVariant
     // ReSharper disable once InconsistentNaming
-    public interface Iterator<TElement, TState> where TElement : struct
+    public interface Iterator<TElement, TState> where TElement : struct // Note that in Stark, we would not have a struct constraint on TElement, as TElement? would be possible
     {
         /// <summary>
         /// Gets the start state for the iteration.
