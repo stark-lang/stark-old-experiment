@@ -5,8 +5,8 @@ namespace Stark.Compiler.Parsing
 {
     public interface ICharReader
     {
-        int Reset();
+        char32 Reset();
 
-        int NextChar(ref TextPosition position);
+        char32 NextChar(ref TextPosition position);
     }
 }

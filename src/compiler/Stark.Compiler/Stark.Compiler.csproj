@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Parsing\char32.cs" />
     <Compile Include="Parsing\CharHelper.CharacterRanges.cs" />
     <Compile Include="Parsing\CharHelper.cs" />
     <Compile Include="Parsing\CharReaderException.cs" />

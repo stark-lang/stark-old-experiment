@@ -9,15 +9,15 @@ namespace Stark.Compiler.Parsing
     {
         private struct CharacterRange
         {
-            public CharacterRange(int start, int end)
+            public CharacterRange(char32 start, char32 end)
             {
                 Start = start;
                 End = end;
             }
 
-            public readonly int Start;
+            public readonly char32 Start;
 
-            public readonly int End;
+            public readonly char32 End;
 
             public int CompareTo(int c)
             {

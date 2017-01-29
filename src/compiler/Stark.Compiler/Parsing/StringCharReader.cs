@@ -7,22 +7,22 @@ namespace Stark.Compiler.Parsing
 {
     public struct StringCharReader : ICharReader
     {
-        private readonly string text;
-        private int c;
+        private readonly string _text;
+        private int _c;
 
         public StringCharReader(string text)
         {
-            this.text = text;
-            c = 0;
+            this._text = text;
+            _c = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int NextChar(ref TextPosition position)
+        public char32 NextChar(ref TextPosition position)
         {
             position.Offset++;
-            if (position.Offset < text.Length)
+            if (position.Offset < _text.Length)
             {
-                if (c == '\n')
+                if (_c == '\n')
                 {
                     position.Column = 0;
                     position.Line += 1;
@@ -32,25 +32,25 @@ namespace Stark.Compiler.Parsing
                     position.Column++;
                 }
 
-                var c1 = text[position.Offset];
+                var c1 = _text[position.Offset];
 
                 // Handle surrogates
-                c = char.IsHighSurrogate(c1) ? NextCharWithSurrogate(ref position, c1) : c1;
+                _c = char.IsHighSurrogate(c1) ? NextCharWithSurrogate(ref position, c1) : c1;
             }
             else
             {
-                position.Offset = text.Length;
-                c = -1;
+                position.Offset = _text.Length;
+                _c = -1;
             }
-            return c;
+            return _c;
         }
 
         private int NextCharWithSurrogate(ref TextPosition position, char c1)
         {
             position.Offset++;
-            if (position.Offset < text.Length)
+            if (position.Offset < _text.Length)
             {
-                var c2 = text[position.Offset];
+                var c2 = _text[position.Offset];
                 if (char.IsLowSurrogate(c2))
                 {
                     return char.ConvertToUtf32(c1, c2);
@@ -60,10 +60,10 @@ namespace Stark.Compiler.Parsing
             throw new CharReaderException("Unexpected EOF after high-surrogate char");
         }
 
-        public int Reset()
+        public char32 Reset()
         {
-            c = text.Length > 0 ? text[0] : -1;
-            return c;
+            _c = _text.Length > 0 ? _text[0] : -1;
+            return _c;
         }
     }
 }

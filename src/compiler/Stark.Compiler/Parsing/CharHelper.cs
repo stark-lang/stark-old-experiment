@@ -7,11 +7,11 @@ namespace Stark.Compiler.Parsing
 {
     static partial class CharHelper
     {
-        public static readonly Func<int, bool> IsHexa = IsHexaFunction;
-        public static readonly Func<int, bool> IsOctal = IsOctalFunction;
-        public static readonly Func<int, bool> IsBinary = IsBinaryFunction;
+        public static readonly Func<char32, bool> IsHexa = IsHexaFunction;
+        public static readonly Func<char32, bool> IsOctal = IsOctalFunction;
+        public static readonly Func<char32, bool> IsBinary = IsBinaryFunction;
 
-        public static bool IsIdentifierStart(int c)
+        public static bool IsIdentifierStart(char32 c)
         {
             // Extracted from http://unicode.org/Public/UNIDATA/DerivedCoreProperties.txt with XIDStartContinueGen
             if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
@@ -22,7 +22,7 @@ namespace Stark.Compiler.Parsing
         }
 
 
-        public static bool IsIdentifierContinue(int c)
+        public static bool IsIdentifierContinue(char32 c)
         {
             if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
             {
@@ -31,12 +31,12 @@ namespace Stark.Compiler.Parsing
             return CharacterRangeContains(XID_Continue_CharacterRanges, c);
         }
 
-        public static bool IsDigit(int c)
+        public static bool IsDigit(char32 c)
         {
             return (c >= '0' && c <= '9');
         }
 
-        public static bool IsWhiteSpace(int c)
+        public static bool IsWhiteSpace(char32 c)
         {
             // http://unicode.org/cldr/utility/list-unicodeset.jsp?a=%5B%3APattern_White_Space%3A%5D&g=&i=
             // Pattern_White_Space except \r and \n
@@ -52,20 +52,20 @@ namespace Stark.Compiler.Parsing
                    c == '\u2029';   // paragraph separator
         }
 
-        private static bool IsHexaFunction(int c)
+        private static bool IsHexaFunction(char32 c)
         {
             return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
         }
-        private static bool IsOctalFunction(int c)
+        private static bool IsOctalFunction(char32 c)
         {
             return (c >= '0' && c <= '7');
         }
-        private static bool IsBinaryFunction(int c)
+        private static bool IsBinaryFunction(char32 c)
         {
             return (c == '0' || c == '1');
         }
 
-        private static bool CharacterRangeContains(CharacterRange[] range, int c)
+        private static bool CharacterRangeContains(CharacterRange[] range, char32 c)
         {
             int lo = 0;
             int hi = range.Length - 1;

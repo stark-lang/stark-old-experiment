@@ -16,9 +16,9 @@ namespace Stark.Compiler.Parsing
     {
         private Token _token;
         private TextPosition _position;
-        private int _c;
+        private char32 _c;
         private TextPosition? _peekPosition;
-        private int? _peekC;
+        private char32? _peekC;
         private List<LogMessage> _errors;
         private int _nestedMultilineCommentCount;
         private TReader _reader;
@@ -431,7 +431,7 @@ namespace Stark.Compiler.Parsing
                 if (_c == 'x' || _c == 'X' || _c == 'o' || _c == 'O' || _c == 'b' || _c == 'B')
                 {
                     string name;
-                    Func<int, bool> match;
+                    Func<char32, bool> match;
                     string range;
                     string prefix;
                     TokenType tokenType;
@@ -568,7 +568,7 @@ namespace Stark.Compiler.Parsing
         {
             var start = _position;
             var end = _position;
-            int startChar = _c;
+            char32 startChar = _c;
             NextChar(); // Skip '
             if (ReadChar(ref end, startChar, false))
             {
@@ -579,7 +579,7 @@ namespace Stark.Compiler.Parsing
                     _token = new Token(TokenType.Char, start, end);
                     return;
                 }
-                AddError($"Unexpected end of file while parsing a character not terminated by a {(char)startChar}", end, end);
+                AddError($"Unexpected end of file while parsing a character not terminated by a {startChar}", end, end);
             }
 
             _token = new Token(TokenType.Invalid, start, end);
@@ -588,7 +588,7 @@ namespace Stark.Compiler.Parsing
         private void ReadString(TextPosition start, bool isRawString)
         {
             var end = _position;
-            int startChar = _c;
+            char32 startChar = _c;
             NextChar(); // Skip "
             while (true)
             {
@@ -621,7 +621,7 @@ namespace Stark.Compiler.Parsing
             _token = new Token(TokenType.String, start, end);
         }
 
-        private bool ReadChar(ref TextPosition end, int startChar, bool isRawString)
+        private bool ReadChar(ref TextPosition end, char32 startChar, bool isRawString)
         {
             if (!isRawString && _c == '\\')
             {
@@ -692,14 +692,12 @@ namespace Stark.Compiler.Parsing
                         }
                         break;
                 }
-                AddError(
-                    $"Unexpected escape character [{(char)_c}] in string. Only 0 ' \\ \" b f n r t v u0000-uFFFF x00-xFF are allowed",
-                    _position, _position);
+                AddError($"Unexpected escape character [{_c}] in string. Only 0 ' \\ \" b f n r t v u0000-uFFFF x00-xFF are allowed", _position, _position);
                 return false;
             }
             else if (_c == Eof)
             {
-                AddError($"Unexpected end of file while parsing a string/character not terminated by a {(char)startChar}", end, end);
+                AddError($"Unexpected end of file while parsing a string/character not terminated by a {startChar}", end, end);
                 return false;
             }
             else
@@ -708,7 +706,7 @@ namespace Stark.Compiler.Parsing
                 {
                     if (!isRawString && (_c == '\r' || _c == '\n'))
                     {
-                        AddError($"Unexpected end of line while parsing a string not terminated by a {(char)startChar}", _position, _position);
+                        AddError($"Unexpected end of line while parsing a string not terminated by a {startChar}", _position, _position);
                         return false;
                     }
                     else
@@ -789,7 +787,7 @@ namespace Stark.Compiler.Parsing
             }
         }
 
-        private int PeekChar()
+        private char32 PeekChar()
         {
             if (_peekC.HasValue)
             {
@@ -819,7 +817,7 @@ namespace Stark.Compiler.Parsing
             }
         }
 
-        private int NextCharFromReader()
+        private char32 NextCharFromReader()
         {
             try
             {
