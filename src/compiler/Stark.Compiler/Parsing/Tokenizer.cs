@@ -703,11 +703,14 @@ namespace Stark.Compiler.Parsing
             {
                 end = _position;
                 NextChar();
-                // 0 ' " \ b f n r t v u0000-uFFFF x00-xFF
+                // 0 \ ' " a b f n r t v u0000-uFFFF x00-xFF
                 switch (_c)
                 {
                     case '0':
                     case '\\':
+                    case '\'':
+                    case '"':
+                    case 'a':
                     case 'b':
                     case 'f':
                     case 'n':
@@ -718,57 +721,44 @@ namespace Stark.Compiler.Parsing
                         NextChar();
                         return true;
                     case 'u':
+                    case 'U':
                         end = _position;
+                        var maxCount = _c == 'u' ? 4 : 8;
                         NextChar();
-                        // Must be followed 4 hex numbers (0000-FFFF)
-                        if (CharHelper.IsHexa(_c)) // 1
+
+                        // Must be followed 0 to 8 hex numbers (0-FFFFFFFF)
                         {
-                            end = _position;
-                            NextChar();
-                            if (CharHelper.IsHexa(_c)) // 2
+                            int i = 0;
+                            for (; CharHelper.IsHexa(_c) && i < maxCount; i++)
                             {
                                 end = _position;
                                 NextChar();
-                                if (CharHelper.IsHexa(_c)) // 3
-                                {
-                                    end = _position;
-                                    NextChar();
-                                    if (CharHelper.IsHexa(_c)) // 4
-                                    {
-                                        end = _position;
-                                        NextChar();
-                                        return true;
-                                    }
-                                }
+                            }
+                            if (i == maxCount)
+                            {
+                                return true;
                             }
                         }
                         break;
                     case 'x':
                         end = _position;
                         NextChar();
-                        // Must be followed 2 hex numbers (00-FF)
-                        if (CharHelper.IsHexa(_c))
+                        // Must be followed 0 to 4 hex numbers (0-FFFF)
                         {
-                            end = _position;
-                            NextChar();
-                            if (CharHelper.IsHexa(_c))
+                            int i = 0;
+                            for (; CharHelper.IsHexa(_c) && i < 4; i++)
                             {
                                 end = _position;
                                 NextChar();
+                            }
+                            if (i > 0)
+                            {
                                 return true;
                             }
                         }
                         break;
-                    default:
-                        if (_c == startChar)
-                        {
-                            end = _position;
-                            NextChar();
-                            return true;
-                        }
-                        break;
                 }
-                AddError($"Unexpected escape character [{_c}] in string. Only 0 ' \\ \" b f n r t v u0000-uFFFF x00-xFF are allowed", _position, _position);
+                AddError($"Unexpected escape character [{_c}] in string. Only 0 ' \\ \" a b f n r t v u0000-uFFFF U00000000-UFFFFFFFF x0-xFFFF are allowed", _position, _position);
                 return false;
             }
             else if (_c == Eof)

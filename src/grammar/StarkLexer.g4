@@ -160,10 +160,7 @@ fragment SimpleEscapeSequence
 	;
 
 fragment HexEscapeSequence
-	: '\\x' [0-9a-fA-F]
-	| '\\x' [0-9a-fA-F]{2}
-	| '\\x' [0-9a-fA-F]{3}
-	| '\\x' [0-9a-fA-F]{4}
+	: '\\x' [0-9a-fA-F]{1-4}
 	;
 
 fragment UnicodeEscapeSequence

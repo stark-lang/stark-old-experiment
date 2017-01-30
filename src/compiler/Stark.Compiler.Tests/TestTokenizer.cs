@@ -266,7 +266,7 @@ multi-line
             {
                 {@"""This a string on a single line""", TokenType.String},
                 {@"""This a string with an escape \"" and escape \\ """, TokenType.String},
-                {@"""This a string with \0 \b \n \u0000 \uFFFF \x00 \xff""", TokenType.String},
+                {@"""This a string with \' \"" \0 \b \n \u0000 \uFFFF \U12345678 \x0 \x00 \xff \x1234""", TokenType.String},
             });
         }
 
@@ -277,17 +277,28 @@ multi-line
             {
                 {@"'a'", TokenType.Char},
                 {@"'\''", TokenType.Char},
-                {@"'\r'", TokenType.Char},
+                {@"'\\'", TokenType.Char},
+                {@"'\""'", TokenType.Char},
+                {@"'\0'", TokenType.Char},
+                {@"'\a'", TokenType.Char},
+                {@"'\b'", TokenType.Char},
+                {@"'\f'", TokenType.Char},
                 {@"'\n'", TokenType.Char},
+                {@"'\r'", TokenType.Char},
                 {@"'\t'", TokenType.Char},
+                {@"'\v'", TokenType.Char},
                 {@"'\u0000'", TokenType.Char},
                 {@"'\u12ab'", TokenType.Char},
                 {@"'\uabcd'", TokenType.Char},
                 {@"'\uFFFF'", TokenType.Char},
+                {@"'\U00000000'", TokenType.Char},
+                {@"'\x0'", TokenType.Char},
                 {@"'\x00'", TokenType.Char},
                 {@"'\x1a'", TokenType.Char},
                 {@"'\xab'", TokenType.Char},
                 {@"'\xFF'", TokenType.Char},
+                {@"'\x0000'", TokenType.Char},
+                {@"'\xFFFF'", TokenType.Char},
             });
         }
 
@@ -355,12 +366,6 @@ multi-line
             Assert.AreEqual(3, list.Count);
             Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
             Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
-
-            list = ParseTokens("'\\x0'", true);
-            Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(3, 0, 3)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(4, 0, 4), new TextPosition(4, 0, 4)), list[1]);
             Assert.AreEqual(Token.Eof, list[2]);
         }
 
