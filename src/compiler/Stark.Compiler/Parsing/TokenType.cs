@@ -22,6 +22,8 @@ namespace Stark.Compiler.Parsing
 
         Identifier,
 
+        Underscores, // at least one _
+
         Integer,
         IntegerHexa,
         IntegerOctal,
@@ -33,7 +35,7 @@ namespace Stark.Compiler.Parsing
 
         String,
 
-        Underscores, // at least one _
+        StringRaw,
 
         [TokenText("`")]
         GraveAccent,
@@ -61,6 +63,42 @@ namespace Stark.Compiler.Parsing
 
         [TokenText("::")]
         ColonColon,
+
+        [TokenText("+=")]
+        PlusEqual,
+
+        [TokenText("-=")]
+        MinusEqual,
+
+        [TokenText("%=")]
+        ModulusEqual,
+
+        [TokenText("*=")]
+        StarEqual,
+
+        [TokenText("/=")]
+        DivideEqual,
+
+        [TokenText("<<=")]
+        LessLessEqual, 
+
+        [TokenText(">>=")]
+        GreaterGreaterEqual,
+
+        [TokenText("|=")]
+        PipeEqual,
+
+        [TokenText("&=")]
+        AndEqual,
+
+        [TokenText("^=")]
+        ExponentEqual,
+
+        [TokenText("||=")]
+        PipePipeEqual,
+
+        [TokenText("&&=")]
+        AndAndEqual,
 
         [TokenText("=")]
         Equal,
