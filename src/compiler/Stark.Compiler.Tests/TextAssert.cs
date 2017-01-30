@@ -22,12 +22,12 @@ namespace Stark.Compiler.Tests
 
         public static void AreEqual(string expectedValue, string actualValue)
         {
-            AreEqual(actualValue, expectedValue, DiffStyle.Full, Console.Out);
+            AreEqual(expectedValue, actualValue, DiffStyle.Full, Console.Out);
         }
 
         public static void AreEqual(string expectedValue, string actualValue, DiffStyle diffStyle)
         {
-            AreEqual(actualValue, expectedValue, diffStyle, Console.Out);
+            AreEqual(expectedValue, actualValue, diffStyle, Console.Out);
         }
 
         public static void AreEqual(string expectedValue, string actualValue, DiffStyle diffStyle, TextWriter output)
@@ -86,7 +86,7 @@ namespace Stark.Compiler.Tests
                 //output.WriteLine();
             }
 
-            Assert.True(string.CompareOrdinal(expectedValue, actualValue) == 0, "strings are differing");
+            Assert.AreEqual(expectedValue, actualValue);
         }
 
         private static string ToSafeString(this char c)

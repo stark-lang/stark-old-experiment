@@ -386,11 +386,11 @@ namespace Stark.Compiler.Parsing
                     _token = new Token(TokenType.Greater, start, start);
                     break;
                 case '(':
-                    _token = new Token(TokenType.OpenParent, _position, _position);
+                    _token = new Token(TokenType.OpenParen, _position, _position);
                     NextChar();
                     break;
                 case ')':
-                    _token = new Token(TokenType.CloseParent, _position, _position);
+                    _token = new Token(TokenType.CloseParen, _position, _position);
                     NextChar();
                     break;
                 case '[':
@@ -597,7 +597,7 @@ namespace Stark.Compiler.Parsing
                     }
 
                     isFloat = true;
-                    while (CharHelper.IsDigit(_c))
+                    while (CharHelper.IsDigit(_c) || _c == '_')
                     {
                         end = _position;
                         NextChar();
@@ -630,7 +630,7 @@ namespace Stark.Compiler.Parsing
                     return;
                 }
 
-                while (CharHelper.IsDigit(_c))
+                while (CharHelper.IsDigit(_c) || _c == '_')
                 {
                     end = _position;
                     NextChar();
@@ -694,7 +694,7 @@ namespace Stark.Compiler.Parsing
                 }
             }
 
-            _token = new Token(TokenType.String, start, end);
+            _token = new Token(isRawString ? TokenType.StringRaw : TokenType.String, start, end);
         }
 
         private bool ReadChar(ref TextPosition end, char32 startChar, bool isRawString)

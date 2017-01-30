@@ -3,7 +3,10 @@
 // See license.txt file in the project root for full license information.
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using Antlr4.Runtime;
 using NUnit.Framework;
 using Stark.Compiler.Parsing;
 
@@ -15,6 +18,14 @@ namespace Stark.Compiler.Tests
     [TestFixture]
     public class TestTokenizer
     {
+        [Test]
+        public void ParseEmpty()
+        {
+            var tokens = ParseTokens("");
+            Assert.AreEqual(1, tokens.Count);
+            Assert.AreEqual(Token.Eof, tokens[0]);
+        }
+
         [Test]
         public void ParseSimpleTokens()
         {
@@ -42,8 +53,8 @@ namespace Stark.Compiler.Tests
                 {"|", TokenType.Pipe},
                 {",", TokenType.Comma},
                 {".", TokenType.Dot},
-                {"(", TokenType.OpenParent},
-                {")", TokenType.CloseParent},
+                {"(", TokenType.OpenParen},
+                {")", TokenType.CloseParen},
                 {"[", TokenType.OpenBracket},
                 {"]", TokenType.CloseBracket},
                 {"{", TokenType.OpenBrace},
@@ -408,7 +419,7 @@ multi-line
             var text = @"@""This a string on """"
 a single line
 """;
-            VerifyCodeBlock(text, new Token(TokenType.String, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 2, 0)));
+            VerifyCodeBlock(text, new Token(TokenType.StringRaw, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 2, 0)));
         }
 
         [Test]
@@ -427,6 +438,63 @@ a single line
             Assert.AreEqual(new Token(TokenType.NewLine, new TextPosition(6, 0, 6), new TextPosition(6, 0, 6)), tokens[4]);
             Assert.AreEqual(new Token(TokenType.OpenBrace, new TextPosition(7, 1, 0), new TextPosition(7, 1, 0)), tokens[5]);
             Assert.AreEqual(new Token(TokenType.Eof, TextPosition.Eof, TextPosition.Eof), tokens[6]);
+        }
+
+        /// <summary>
+        /// We verify that the handwritten lexer is verified against the ANTLR StarkLexer.g4 file
+        /// </summary>
+        [Test]
+        public void VerifyAgainstANTLRLexer()
+        {
+            var inputFilePath = Path.Combine(Path.GetDirectoryName(typeof(TestTokenizer).Assembly.Location),
+                "StarkTokenTests.sk");
+            var inputString = File.ReadAllText(inputFilePath);
+
+            // Build ANTLR Output
+            var antlrLexer = new StarkLexer(new AntlrInputStream(inputString));
+            var builder = new StringBuilder();
+            while (true)
+            {
+                var nextToken = antlrLexer.NextToken();
+                if (nextToken.Type == -1)
+                {
+                    break;
+                }
+
+                var name = antlrLexer.Vocabulary.GetSymbolicName(nextToken.Type);
+                builder.AppendLine($"{name} ({nextToken.StartIndex}:{nextToken.Line},{nextToken.Column})-{nextToken.StopIndex}");
+            }
+            var antlrOutput = builder.ToString();
+
+            // Build Stark Output
+            var tokens = ParseTokens(inputString);
+            tokens.RemoveAt(tokens.Count - 1);
+            builder.Clear();
+            foreach (var token in tokens)
+            {
+                var tokenTypeName = token.Type.ToString();
+                for (int i = 0; i < tokenTypeName.Length; i++)
+                {
+                    var c = tokenTypeName[i];
+                    if (i > 0 && char.IsUpper(c))
+                    {
+                        builder.Append('_');
+                    }
+                    builder.Append(char.ToUpperInvariant(c));
+                }
+                builder.AppendLine($" ({token.Start.Offset}:{token.Start.Line + 1},{token.Start.Column})-{token.End.Offset}");
+            }
+            var starkOutput = builder.ToString();
+
+            Console.WriteLine(">>> ANTLR Output");
+            Console.WriteLine(antlrOutput);
+
+            Console.WriteLine();
+            Console.WriteLine(">>> STARK Output");
+            Console.WriteLine(starkOutput);
+
+            // Verify that we have the same output
+            TextAssert.AreEqual(antlrOutput, starkOutput);
         }
 
         private void VerifySimpleTokens(Dictionary<string, TokenType> simpleTokens)

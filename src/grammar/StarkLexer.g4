@@ -8,7 +8,8 @@
 // This is a work in progress.
 //
 // This lexer grammar is not used for parsing, as we are using a handwritten 
-// tokenizer.
+// tokenizer. But the tests are checking the tokens against this file
+// in order to verify that the handwritten tokenizer is correct.
 // *************************************************************************
 
 lexer grammar StarkLexer;
@@ -27,9 +28,9 @@ NEW_LINE: '\r\n' | '\r' | '\n'
 	;
 
 // Comments
-COMMENT : '//' ( ~[/\n] ~[\n]* )?;
+COMMENT : '//' ( ~[/\r\n] ~[\r\n]* )?;
 COMMENT_DOC : '///' ~[\r\n]*;
-COMMENT_MULTILINE : '/*' (COMMENT_MULTILINE | .)*? '*/';
+COMMENT_MULTI_LINE : '/*' (COMMENT_MULTI_LINE | .)*? '*/';
 
 // Identifier
 IDENTIFIER: XID_Start XID_Continue*;
@@ -47,8 +48,9 @@ FLOAT: [0-9][0-9_]* ( ([eE] [-+]? [0-9][0-9_]*) | '.' [0-9][0-9_]* ([eE] [-+]? [
 
 // Character and Strings
 CHAR:       '\'' (~['\\\r\n\u0085\u2028\u2029] | CommonCharacter) '\'';
-STRING:     '"'  (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"';
 STRING_RAW: '@"' (~'"' | '""')* '"';
+STRING:     '"'  (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"';
+
 
 // For ANTLR, we use a simplified version of XID_Start and XID_Continue
 // but in the real parser, we extract these from unicode db
@@ -160,10 +162,13 @@ fragment SimpleEscapeSequence
 	;
 
 fragment HexEscapeSequence
-	: '\\x' [0-9a-fA-F]{1-4}
+	: '\\x' [0-9a-fA-F]
+	| '\\x' [0-9a-fA-F][0-9a-fA-F]
+	| '\\x' [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
+	| '\\x' [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
 	;
 
 fragment UnicodeEscapeSequence
-	: '\\u' [0-9a-fA-F]{4}
-	| '\\U' [0-9a-fA-F]{8}
+	: '\\u' [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
+	| '\\U' [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
 	;	

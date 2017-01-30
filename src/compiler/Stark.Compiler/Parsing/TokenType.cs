@@ -194,9 +194,9 @@ namespace Stark.Compiler.Parsing
         DotDotLess,
 
         [TokenText("(")]
-        OpenParent,
+        OpenParen,
         [TokenText(")")]
-        CloseParent,
+        CloseParen,
 
         [TokenText("{")]
         OpenBrace,
