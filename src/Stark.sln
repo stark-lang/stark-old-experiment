@@ -9,9 +9,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stark.Compiler.Tests", "com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDGenApp", "tools\XIDGenApp\XIDGenApp.csproj", "{502AC84C-38F9-48EC-90AA-A3D460A84797}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01-Compiler", "01-Compiler", "{D6E60B94-BD58-4618-BC1E-E27A45F2A0AE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20-Compiler", "20-Compiler", "{D6E60B94-BD58-4618-BC1E-E27A45F2A0AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "99-Tools", "99-Tools", "{1AE76739-7B96-4823-8A07-B6B81231BB72}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10-Grammar", "10-Grammar", "{C58F900E-66A4-4382-94FD-B8AD5D190DDD}"
+	ProjectSection(SolutionItems) = preProject
+		grammar\StarkLexer.g4 = grammar\StarkLexer.g4
+		grammar\StarkParser.g4 = grammar\StarkParser.g4
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
