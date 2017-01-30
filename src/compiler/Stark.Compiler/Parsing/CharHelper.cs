@@ -14,6 +14,7 @@ namespace Stark.Compiler.Parsing
         public static bool IsIdentifierStart(char32 c)
         {
             // Extracted from http://unicode.org/Public/UNIDATA/DerivedCoreProperties.txt with XIDStartContinueGen
+            // Test regular ASCII characters first before going to a more costly binary search on XID_Start
             if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
             {
                 return true;
@@ -24,6 +25,7 @@ namespace Stark.Compiler.Parsing
 
         public static bool IsIdentifierContinue(char32 c)
         {
+            // Test regular ASCII characters first before going to a more costly binary search on XID_Continue
             if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
             {
                 return true;

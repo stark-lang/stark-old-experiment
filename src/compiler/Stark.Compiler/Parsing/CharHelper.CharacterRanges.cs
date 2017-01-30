@@ -27,10 +27,12 @@ namespace Stark.Compiler.Parsing
             }
         }
 
+        // TODO: Improve Allocation. Use an array of integers instead to have this characters stored in a byte buffer in the managed assembly
+
         private static readonly CharacterRange[] XID_Start_CharacterRanges = new CharacterRange[]
         {
-            new CharacterRange(0x41, 0x5A),
-            new CharacterRange(0x61, 0x7A),
+            //new CharacterRange(0x41, 0x5A), // [A-Z] don't include as they are already included by the caller
+            //new CharacterRange(0x61, 0x7A), // [a-z]
             new CharacterRange(0xAA, 0xAA),
             new CharacterRange(0xB5, 0xB5),
             new CharacterRange(0xBA, 0xBA),
@@ -679,10 +681,10 @@ namespace Stark.Compiler.Parsing
 
         private static readonly CharacterRange[] XID_Continue_CharacterRanges = new CharacterRange[]
         {
-            new CharacterRange(0x30, 0x39),
-            new CharacterRange(0x41, 0x5A),
-            new CharacterRange(0x5F, 0x5F),
-            new CharacterRange(0x61, 0x7A),
+            //new CharacterRange(0x30, 0x39), // [0-9] Don't include this characters as they are already handled by default
+            //new CharacterRange(0x41, 0x5A), // [A-Z]
+            //new CharacterRange(0x5F, 0x5F), // [_]
+            //new CharacterRange(0x61, 0x7A), // [a-z]
             new CharacterRange(0xAA, 0xAA),
             new CharacterRange(0xB5, 0xB5),
             new CharacterRange(0xB7, 0xB7),
