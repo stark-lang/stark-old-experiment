@@ -17,6 +17,25 @@
 
 // TODO: Usage of plural form is not always consistent: sometimes it is a * (0 or more) or a + (1 or more)
 // TODO: Clarify where NEW_LINE / SEMI_COLON are relevant or should be ignored/skipped
+// TODO: Add missing
+//  - use module directive
+//  - pattern matching
+//  - if let / while let
+//  - static members, inheritance and extensions
+//  - unsafe
+//  - overflow/checked/unchecked?
+//  - transient semantic
+//  - throws/try semantic
+//  - delegate lambda/closures
+//  - scoped descructor/defer / single ownership?
+//  - fixed array and raw arrays (non reference type)
+//  - yield return?
+//  - annotations
+//  - async / await
+//  - custom new operator
+//  - integrated tests
+//  - pure functions / side-effect free
+//  - constructor init semantic
 
 parser grammar StarkParser;
 
@@ -38,9 +57,9 @@ Modules: ModuleDeclaration
        | ModuleDefinition
        ;
 
-ModuleDefinition: 'module' ModuleFullPath ModuleBody;
+ModuleDefinition: Visibility? 'module' ModuleFullPath ModuleBody;
 
-ModuleDeclaration: 'module' ModuleFullPath NEW_LINE;
+ModuleDeclaration: Visibility? 'module' ModuleFullPath NEW_LINE;
 
 ModuleFullPath:  ModulePath? ModuleName;
 
