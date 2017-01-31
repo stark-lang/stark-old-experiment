@@ -124,6 +124,7 @@ namespace Stark.Compiler.Tests
                 {"_9", TokenType.Identifier},
                 {"áê", TokenType.Identifier},
                 {"_áê", TokenType.Identifier},
+                {"\U0001EE29\U0001EE2A\U0001EE2B\U0001EE2Cz", TokenType.Identifier},
             });
         }
 
@@ -440,15 +441,20 @@ a single line
             Assert.AreEqual(new Token(TokenType.Eof, TextPosition.Eof, TextPosition.Eof), tokens[6]);
         }
 
+        public static string LoadTestTokens()
+        {
+            var inputFilePath = Path.Combine(Path.GetDirectoryName(typeof(TestTokenizer).Assembly.Location),
+                "StarkTokenTests.sk");
+            return File.ReadAllText(inputFilePath);
+        }
+
         /// <summary>
         /// We verify that the handwritten lexer is verified against the ANTLR StarkLexer.g4 file
         /// </summary>
         [Test]
         public void VerifyAgainstANTLRLexer()
         {
-            var inputFilePath = Path.Combine(Path.GetDirectoryName(typeof(TestTokenizer).Assembly.Location),
-                "StarkTokenTests.sk");
-            var inputString = File.ReadAllText(inputFilePath);
+            var inputString = LoadTestTokens();
 
             // Build ANTLR Output
             var antlrLexer = new StarkLexer(new AntlrInputStream(inputString));
@@ -502,7 +508,8 @@ a single line
             foreach (var token in simpleTokens)
             {
                 var text = token.Key;
-                VerifyCodeBlock(text, new Token(token.Value, new TextPosition(0, 0, 0), new TextPosition(token.Key.Length - 1, 0, token.Key.Length - 1)) );
+                var charCount = GetUTF32CharacterCount(text);
+                VerifyCodeBlock(text, new Token(token.Value, new TextPosition(0, 0, 0), new TextPosition(token.Key.Length - 1, 0, charCount - 1)) );
             }
         }
 
@@ -555,12 +562,28 @@ a single line
                 }
                 else
                 {
-                    Assert.AreEqual(newTokens[newTokens.Count - 2], new Token(TokenType.Spaces, new TextPosition(newText.Length - 1, 0, newText.Length - 1), new TextPosition(newText.Length - 1, 0, newText.Length - 1)));
+                    var charCount = GetUTF32CharacterCount(newText);
+                    Assert.AreEqual(newTokens[newTokens.Count - 2], new Token(TokenType.Spaces, new TextPosition(newText.Length - 1, 0, charCount - 1), new TextPosition(newText.Length - 1, 0, charCount - 1)));
                 }
 
                 Assert.AreEqual(expectedTokenList, tokens, $"Unexpected error while parsing: {text}");
                 VerifyTokenGetText(tokens, text);
             }
+        }
+
+        private static int GetUTF32CharacterCount(string text)
+        {
+            int realLength = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                realLength++;
+                if (char.IsHighSurrogate(text[i]))
+                {
+                    i++;
+                    continue;
+                }
+            }
+            return realLength;            
         }
 
         private static void VerifyTokenGetText(List<Token> tokens, string text)
