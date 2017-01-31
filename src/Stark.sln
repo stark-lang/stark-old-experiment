@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10-Grammar", "10-Grammar", 
 	ProjectSection(SolutionItems) = preProject
 		grammar\StarkLexer.g4 = grammar\StarkLexer.g4
 		grammar\StarkParser.g4 = grammar\StarkParser.g4
+		grammar\XID_Start_Continue.g4 = grammar\XID_Start_Continue.g4
 	EndProjectSection
 EndProject
 Global

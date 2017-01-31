@@ -18,6 +18,8 @@ lexer grammar StarkLexer;
 // Tokens
 // -------------------------------------------------------------------------
 
+import XID_Start_Continue;
+
 // Spaces and Newlines
 SPACES: Whitespace+; // Note we separate NL from WHITESPACES
 
@@ -33,6 +35,10 @@ COMMENT_DOC : '///' ~[\r\n]*;
 COMMENT_MULTI_LINE : '/*' (COMMENT_MULTI_LINE | .)*? '*/';
 
 // Identifier
+// Note that for XID_Start, XID_Continue they are not strictly equivalent
+// to the manual parser, as ANTLR doesn't support UTF-32
+// so UTF-32 chars are currently removed from the set 
+// See issue: https://github.com/antlr/antlr4/issues/276
 IDENTIFIER: XID_Start XID_Continue*;
 
 UNDERSCORES: '_'+;
@@ -50,12 +56,6 @@ FLOAT: [0-9][0-9_]* ( ([eE] [-+]? [0-9][0-9_]*) | '.' [0-9][0-9_]* ([eE] [-+]? [
 CHAR:       '\'' (~['\\\r\n\u0085\u2028\u2029] | CommonCharacter) '\'';
 STRING_RAW: '@"' (~'"' | '""')* '"';
 STRING:     '"'  (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"';
-
-
-// For ANTLR, we use a simplified version of XID_Start and XID_Continue
-// but in the real parser, we extract these from unicode db
-XID_Start: [_a-zA-Z];
-XID_Continue: [_a-zA-Z0-9];
 
 TILDE: '~';
 SEMI_COLON: ';';
