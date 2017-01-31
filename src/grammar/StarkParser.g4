@@ -15,35 +15,307 @@
 // parser (indicated as a comment in the grammar if there is anything special)
 // *************************************************************************
 
+// TODO: Usage of plural form is not always consistent: sometimes it is a * (0 or more) or a + (1 or more)
+// TODO: Clarify where NEW_LINE / SEMI_COLON are relevant or should be ignored/skipped
+
 parser grammar StarkParser;
 
 options { tokenVocab=StarkLexer; }
 
-// Top level grammar declarations
-Declaration: ModuleDeclaration
-           | TypeDeclaration
-           | BlockDeclaration
+// Language declarations
+Declarations: Declaration*;
+
+Declaration: Modules
+           | Functions
+           | Types
            ;
 
 // -------------------------------------------------------------------------
 // Module
 // -------------------------------------------------------------------------
 
-// Defines Modules and ModuleDeclaration
-ModuleName: IDENTIFIER;
-ModulePath: COLON_COLON? (ModuleName COLON_COLON)+;
+Modules: ModuleDeclaration
+       | ModuleDefinition
+       ;
+
+ModuleDefinition: 'module' ModuleFullPath ModuleBody;
+
+ModuleDeclaration: 'module' ModuleFullPath NEW_LINE;
 
 ModuleFullPath:  ModulePath? ModuleName;
 
-ModuleDeclaration: 'module' ModuleFullPath Eos;
+ModulePath: COLON_COLON? (ModuleName COLON_COLON)+;
 
-// BlockDeclaration
+ModuleName: IDENTIFIER;
 
-BlockDeclaration: OPEN_BRACE Declaration* CLOSE_BRACE;
+ModuleBody: OPEN_BRACE Declarations CLOSE_BRACE;
 
+// -------------------------------------------------------------------------
+// Type Reference
+// -------------------------------------------------------------------------
+Type: Permission? TypePath STAR?;
+
+TypePath: DelegateDefinition
+        | ModulePath? TypePart;
+
+TypePart: TypePart DOT IDENTIFIER TypeArguments?
+        | TypeFinalPart;
+
+TypeFinalPart: TypeFinalPart OPEN_BRACKET CLOSE_BRACKET
+             | IDENTIFIER TypeArguments?;
+
+TypeArguments: LESS Type (COMMA Type)* GREATER;
+
+
+// -------------------------------------------------------------------------
+// Template Parameters
+// -------------------------------------------------------------------------
+TemplateParameters: LESS TemplateParameter (COMMA TemplateParameter)* CLOSE_PAREN;
+
+TemplateParameter: TemplateParameterName
+                | TemplateParameterTyped
+                | TemplateParameterHigherOrder
+                ;
+
+TemplateParameterName: IDENTIFIER;
+TemplateParameterType: IDENTIFIER;
+
+TemplateParameterHigherOrder: TemplateParameterName TemplateParameters+;
+TemplateParameterTyped: TemplateParameterName COLON TemplateParameterType;
+
+TemplateParameterTypeConstraints: ('where' TemplateParameterTypeConstraint)*;
+
+TemplateParameterTypeConstraint: IDENTIFIER 'extends' TypePath
+                               | IDENTIFIER 'implements' TypePath;
+
+// -------------------------------------------------------------------------
+// Modifiers
+// -------------------------------------------------------------------------
+
+Visibility: 'public'
+          | 'internal' 
+          | 'private'
+          | 'protected'
+          ;
+
+Partial: 'partial';
+
+Access: Permission
+      | Ownership
+      ;
+
+Permission: 'immutable'
+          | 'readonly'
+          ;
+
+Ownership: 'isolated';
+
+// -------------------------------------------------------------------------
+// Contracts
+//
+// Used by functions
+// 
+// TODO: Do we really need more? 
+// -------------------------------------------------------------------------
+
+Contracts:  Contract*
+         ;
+
+Contract: Requires
+        | Ensures;
+
+Requires: 'requires' Expression;
+
+Ensures: 'ensures' Expression;
+
+
+// *************************************************************************
+// -------------------------------------------------------------------------
+// Function definitions
+// -------------------------------------------------------------------------
+// *************************************************************************
+
+Functions: Function
+         | Property
+         | Operator
+         ;
+
+// -------------------------------------------------------------------------
+// Function
+//
+// They can be used in:
+// - global functions
+// - class/struct methods
+// - class/struct static methods
+// - trait methods
+// -------------------------------------------------------------------------
+
+VariableType: Access? Type;
+
+FunctionInheritability: 'virtual'
+                      | 'override'
+                      | 'abstract'
+                      ;
+
+Function: Visibility? Permission? IDENTIFIER TemplateParameters? OPEN_PAREN FunctionParameters? CLOSE_PAREN FunctionReturnType? Contracts? (FunctionBody | NEW_LINE);
+
+FunctionParameters: FunctionParameter (COMMA FunctionParameter)*;
+
+FunctionParameter: 'mutable'? IDENTIFIER (COLON VariableType)?;
+
+FunctionReturnType: MINUS_GREATER VariableType;
+
+
+FunctionBody: StatementBlock
+            | FunctionExpression NEW_LINE;
+
+FunctionExpression: EQUAL_GREATER Expression;
+
+// -------------------------------------------------------------------------
+// Property 
+//
+// A property is a special function that provides a getter / setter
+//
+// They can be used in:
+// - global properties
+// - class/struct properties
+// - class/struct static properties
+// - trait properties
+// -------------------------------------------------------------------------
+
+Property: Visibility? IDENTIFIER COLON Type PropertyBody;
+
+PropertyBody: OPEN_BRACE PropertyGetter? PropertySetter? CLOSE_BRACE 
+            | FunctionExpression NEW_LINE;
+
+PropertyGetter: 'get' Permission? Contracts? (StatementBlock | NEW_LINE);
+PropertySetter: 'set' Permission? Contracts? (StatementBlock | NEW_LINE);
+
+
+// -------------------------------------------------------------------------
+// Operator
+//
+// Similar to functions using customized symbol operators.
+//
+// They can be used in:
+// - global operators
+// - class/struct operators
+// - class/struct static operators
+// - trait operators
+// -------------------------------------------------------------------------
+// NOTE: An operator definition starts exactly like a function, but the IDENTIFIER is `operator`
+// The main difference after is for the parameters (that accept string/chars to define the operator)
+
+Operator: Visibility? Permission? 'operator' TemplateParameters? OPEN_PAREN OperatorParameters CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
+
+
+OperatorParameters: OperatorParametersMember
+                  | OperatorParametersUnary
+                  | OperatorParametersBinary
+                  | OperatorParametersIndexer
+                  ;
+
+OperatorParametersMember: (CHAR|STRING|STRING_RAW);
+OperatorParametersIndexer: (CHAR|STRING|STRING_RAW) FunctionParameter (COMMA FunctionParameter)* (CHAR|STRING|STRING_RAW);
+
+OperatorParametersUnary: (CHAR|STRING|STRING_RAW) FunctionParameter;
+
+OperatorParametersBinary: FunctionParameter (CHAR|STRING|STRING_RAW) FunctionParameter;
+
+// -------------------------------------------------------------------------
+// Delegate
+// -------------------------------------------------------------------------
+
+DelegateDefinition: 'delegate' TypeConstructor FunctionReturnType?; 
+
+Delegate: Visibility? 'delegate' IDENTIFIER TypeConstructor FunctionReturnType? NEW_LINE; 
+
+// *************************************************************************
+// -------------------------------------------------------------------------
+// Type
+// -------------------------------------------------------------------------
+// *************************************************************************
+
+Types: Class 
+     | Trait
+     | Enum
+     | Extension
+     | Delegate
+     ;
+
+TypeConstructor: OPEN_PAREN FunctionParameters CLOSE_PAREN;
+
+// -------------------------------------------------------------------------
+// Struct/Class
+// -------------------------------------------------------------------------
+
+Class: Visibility? Partial? Permission? Inheritability? ('struct'|'class') ClassIdentifier TypeConstructor? Extends? Implements? TemplateParameterTypeConstraints? ClassBody;
+
+Extends: 'extends' TypePath;
+
+Implements: 'implements' TypePath (COMMA TypePath )+;
+
+Inheritability: 'virtual'
+              | 'abstract'
+              ;
+
+ClassIdentifier: IDENTIFIER TemplateParameters?;
+
+ClassBody: OPEN_BRACE ClassMember* CLOSE_BRACE;
+
+ClassMember: ClassField
+           | Functions
+           ;
+
+ClassField: Visibility? IDENTIFIER COLON Type NEW_LINE;
+
+// -------------------------------------------------------------------------
+// Trait
+// -------------------------------------------------------------------------
+
+Trait: Visibility? Partial? 'trait' TraitIdentifier TypeConstructor? Extends? TemplateParameterTypeConstraints? TraitBody;
+
+TraitIdentifier: IDENTIFIER TemplateParameters?;
+
+TraitBody: OPEN_BRACE TraitMember* CLOSE_BRACE;
+
+TraitMember: Functions
+           ;
+// -------------------------------------------------------------------------
+// Enum
+// -------------------------------------------------------------------------
+
+Enum: Visibility? 'enum' EnumIdentifier (COLON IDENTIFIER)? TemplateParameterTypeConstraints? EnumBody;
+
+EnumIdentifier: IDENTIFIER TemplateParameters?;
+
+EnumBody: OPEN_BRACE EnumMembers? CLOSE_BRACE;
+
+EnumMembers: EnumMember (COMMA EnumMember)* COMMA?;
+
+EnumMember: IDENTIFIER
+          | IDENTIFIER TypeConstructor
+          | IDENTIFIER EQUAL Expression;
+
+// -------------------------------------------------------------------------
+// Extension
+// -------------------------------------------------------------------------
+Extension: Visibility? Extends Implements? TemplateParameterTypeConstraints? ExtensionBody;
+
+ExtensionBody: OPEN_BRACE ExtensionMember* CLOSE_BRACE;
+
+ExtensionMember: Functions
+               ;
+
+// *************************************************************************
 // -------------------------------------------------------------------------
 // Statements
 // -------------------------------------------------------------------------
+// *************************************************************************
+
+// End of statement
+Eos: NEW_LINE | SEMI_COLON;
+
 
 Statement: StatementFor
          | StatementLoop
@@ -91,17 +363,6 @@ StatementAssign: Expression StatementAssignOperators Expression Eos
                | Expression (PLUS_PLUS | MINUS_MINUS) Eos
                ;
 
-// A variable path
-ExpressionLValue: ModulePath? VariableTypePart;
-
-VariableTypePart: VariableTypePart DOT IDENTIFIER TypeArguments?
-                | VariableTypePartFinalPart;
-
-VariableTypePartFinalPart: VariableTypePartFinalPart OPEN_BRACKET CLOSE_BRACKET
-                         | IDENTIFIER TypeArguments?;
-
-// x += 1 equivalent to x++
-// x -= 1 equivalent to x--
 StatementAssignOperators: EQUAL
                         | PLUS_EQUAL
                         | MINUS_EQUAL
@@ -119,9 +380,11 @@ StatementAssignOperators: EQUAL
 
 StatementEmpty : Eos;                        
 
+// *************************************************************************
 // -------------------------------------------------------------------------
 // Expressions
 // -------------------------------------------------------------------------
+// *************************************************************************
 
 // From higher to lower precedence
 Expression: ExpressionIdentifier
@@ -185,76 +448,3 @@ ExpressionLiteralSimple: ExpressionLiteralBool
                        ;
 
 ExpressionLiteralBool: 'true' | 'false';
-
-// -------------------------------------------------------------------------
-// Type Declaration (class, struct)
-// -------------------------------------------------------------------------
-
-TypeDeclaration: TypeStructClassDeclaration;
-
-TypeStructClassDeclaration: TypeVisibility? TypePermission? TypeInheritability? ('struct'|'class') TypeDeclarationIdentifer TypeConstructor? (COLON TypePath (COMMA TypePath )+ )? ('where' TypeTemplateConstraint)+ Eos;
-
-
-TypeVisibility: 'public'
-              | 'internal' 
-              ;
-
-TypePermission: 'immutable'
-              | 'readonly'
-              ;
-
-TypeOwnership: 'isolated';
-
-
-TypeInheritability: 'virtual'
-                  | 'abstract'
-                  ;
-
-TypeDeclarationIdentifer: IDENTIFIER TypeTemplateParameters?;
-
-
-Constructor: OPEN_PAREN ParameterList CLOSE_PAREN;
-
-ParameterList: IDENTIFIER COLON;
-
-
-
-TypeTemplateParameters: LESS TypeTemplateParameter (COMMA TypeTemplateParameter)* CLOSE_PAREN;
-TypeTemplateParameter: TypeTemplateParameterName
-                | TypeTemplateParameterTyped
-                | TypeTemplateParameterHigherOrder
-                ;
-
-TypeTemplateParameterName: IDENTIFIER;
-TypeTemplateParameterType: IDENTIFIER;
-
-TypeTemplateParameterHigherOrder: TypeTemplateParameterName TypeTemplateParameters+;
-TypeTemplateParameterTyped: TypeTemplateParameterName COLON TypeTemplateParameterType;
-
-
-
-TypeConstructor: OPEN_PAREN TypeConstructorParameters CLOSE_PAREN;
-
-TypeConstructorParameters: TypeConstructorParameter (COMMA TypeConstructorParameters)*;
-
-TypeConstructorParameter: 'mutable'? IDENTIFIER COMMA VariableType;
-
-VariableType: TypeOwnership? Type;
-
-// A Type Declaration
-Type: TypePermission? TypePath STAR?;
-
-TypePath: ModulePath? TypePart;
-
-TypePart: TypePart DOT IDENTIFIER TypeArguments?
-        | TypeFinalPart;
-
-TypeFinalPart: TypeFinalPart OPEN_BRACKET CLOSE_BRACKET
-             | IDENTIFIER TypeArguments?;
-
-TypeArguments: LESS Type (COMMA Type)* GREATER;
-
-
-TypeTemplateConstraint: IDENTIFIER 'is' Type;
-
-Eos: NEW_LINE | SEMI_COLON;
