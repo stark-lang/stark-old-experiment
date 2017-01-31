@@ -15,7 +15,7 @@ patterns:
 
 repository:
   builtin-types:
-    match: \b(bool|char8|char16|char32|float64|float32|int64|int32|int16|int8|uint64|uint32|uint16|uint8|intz|uintz|isize|usize|intptr|uintptr|object|str8|str16|str32)\b
+    match: \b(bool|char8|char16|char32|float64|float32|int64|int32|int16|int8|uint64|uint32|uint16|uint8|isize|usize|intptr|uintptr|object|string8|string16|string32)\b
     captures:
       '1': {name: keyword.type.sk}
   visibility-modifiers:
@@ -33,7 +33,7 @@ repository:
       match: \benum\b
   keywords:
     name: keyword.type.sk
-    match: \b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b
+    match: \b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b
   comment:
     patterns:
     - name: comment.block.sk

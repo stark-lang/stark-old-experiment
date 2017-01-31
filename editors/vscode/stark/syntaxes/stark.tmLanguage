@@ -52,7 +52,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>\b(bool|char8|char16|char32|float64|float32|int64|int32|int16|int8|uint64|uint32|uint16|uint8|intz|uintz|isize|usize|intptr|uintptr|object|str8|str16|str32)\b</string>
+			<string>\b(bool|char8|char16|char32|float64|float32|int64|int32|int16|int8|uint64|uint32|uint16|uint8|isize|usize|intptr|uintptr|object|string8|string16|string32)\b</string>
 		</dict>
 		<key>char-literal</key>
 		<dict>
@@ -180,7 +180,7 @@
 		<key>keywords</key>
 		<dict>
 			<key>match</key>
-			<string>\b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b</string>
+			<string>\b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b</string>
 			<key>name</key>
 			<string>keyword.type.sk</string>
 		</dict>
