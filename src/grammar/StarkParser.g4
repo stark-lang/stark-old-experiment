@@ -179,7 +179,7 @@ Ensures: 'ensures' Expression;
 
 Functions: Function
          | Property
-         | Operator
+         | OperatorDefinition
          ;
 
 // -------------------------------------------------------------------------
@@ -200,14 +200,14 @@ FunctionParameters: FunctionParameter (COMMA FunctionParameter)*;
 
 FunctionParameter: 'mutable'? IDENTIFIER (COLON VariableType)?;
 
-FunctionReturnType: MINUS_GREATER VariableType;
+FunctionReturnType: '->'  VariableType; // TODO: Parsing MINUS GREATER
 
 
 FunctionBody: StatementBlock
             | FunctionExpression Eod
             | Eod;
 
-FunctionExpression: EQUAL_GREATER Expression;
+FunctionExpression: '=>' Expression; // TODO: Parsing EQUAL GREATER
 
 // -------------------------------------------------------------------------
 // Property 
@@ -245,6 +245,8 @@ PropertySetter: 'set' Permission? Contracts? (StatementBlock | Eod);
 // The main difference after is for the parameters (that accept string/chars to define the operator)
 
 // An OperatorDeclaration must happen before any usage of the Operator definition
+// We don't strictly define how the operator strings are defined here
+// This will be parsed and validated by the handwritten parser
 OperatorDeclaration: Visibility? 'operator' (CHAR|STRING|STRING_RAW|UNDERSCORES)+ OperatorDescription;
 
 OperatorDescription: OPEN_BRACE OperatorHint* CLOSE_BRACE;
@@ -257,7 +259,7 @@ OperatorHint: 'precedence' COLON INTEGER Eod
             | 'id' COLON STRING Eod
             ;
 
-Operator: Modifier* 'operator' TemplateParameters? OPEN_PAREN OperatorParameters CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
+OperatorDefinition: Modifier* 'operator' TemplateParameters? OPEN_PAREN OperatorParameters CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
 
 
 OperatorParameters: OperatorParametersMember
@@ -409,24 +411,11 @@ StatementUnsafe: 'unsafe' StatementBlock;
 
 StatementBlock: OPEN_BRACE Statement* CLOSE_BRACE;
 
-StatementAssign: Expression StatementAssignOperators Expression Eod
-               | Expression (PLUS_PLUS | MINUS_MINUS) Eod
+// All assign expressions are actually not allowed in expressions but only
+// from a statement. Yet custom expression operators can define assign
+// operators
+StatementAssign:  Expression '=' Expression Eod
                ;
-
-StatementAssignOperators: EQUAL
-                        | PLUS_EQUAL
-                        | MINUS_EQUAL
-                        | STAR_EQUAL 
-                        | MODULUS_EQUAL
-                        | DIVIDE_EQUAL 
-                        | LESS_LESS_EQUAL 
-                        | GREATER_GREATER_EQUAL 
-                        | PIPE_EQUAL
-                        | AND_EQUAL
-                        | EXPONENT_EQUAL
-                        | PIPE_PIPE_EQUAL
-                        | AND_AND_EQUAL
-                        ;
 
 StatementEmpty : Eod;                        
 
@@ -436,36 +425,46 @@ StatementEmpty : Eod;
 // -------------------------------------------------------------------------
 // *************************************************************************
 
-// NOTE: The following expressions are going to be removed
-// as I expect to be able to define all expressions through the operator semantic
-// to allow to build "builtin" operators as regular custom operators.
-// It means that even the "new" operator would be a specific operator.
+// NOTE: Expression are partially defined here, as most of the expressions
+// will be defined through operator declarations to allow custom and builtin
+// operators to be added to the parsing without changing the grammar
 
-// From higher to lower precedence
+// Expressions are defined first by two builtins expression: 
+// - literals
+// - full identifiers: module_prefix (using :: separator) + IDENTIFIER + template_parameters (embraced by '<' '>')
+
+// The handwritten parsing of the template parameters '<' '>' requires special treatment in order to 
+// separate it from regular compare operators like '<' or '>'
+// If the parsing of a template doesn't succeed (for any reasons like non expecting characters inside the < >)
+// the parser will have to rollback to the initial '<' and let parsing operators occuring
+
 Expression: ExpressionIdentifier
           | ExpressionLiteral          
-          | Expression DOT Expression                          // #ExpressionMember
-          | Expression MINUS_GREATER Expression                         // #ExpressionMemberPointer
-          | OPEN_PAREN Expression (COMMA Expression)* CLOSE_PAREN               // #ExpressionTuple
-          | Expression OPEN_BRACKET Expression (COMMA Expression)* CLOSE_BRACKET    // #ExpressionIndexer
-          | Expression OPEN_PAREN Expression (COMMA Expression)* CLOSE_PAREN    // #ExpressionInvoke
-          | 'typeof' OPEN_PAREN Expression CLOSE_PAREN
-          | ('throw'|'new'|'ref'|'out') Expression             // #ExpressionUnaryAction
-          | AND Expression                                     // #ExpressionAddressOf
-          | (TILDE|NOT|PLUS|MINUS) Expression                       // #ExpressionUnaryOperator
-          | Expression (STAR|DIVIDE|MODULUS) Expression                // #ExpressionBinary
-          | Expression (PLUS|MINUS) Expression                    // #ExpressionBinary
-          | Expression (LESS_LESS | GREATER_GREATER) Expression                // #ExpressionBinary
-          | Expression ('as' | 'is' | 'as?') TypePath          // #ExpressionAsIs
-          | Expression (LESS_EQUAL | GREATER_EQUAL | LESS | GREATER) Expression    // #ExpressionBinary
-          | Expression (EQUAL_EQUAL | NOT_EQUAL) Expression                // #ExpressionBinary
-          | Expression AND Expression                          // #ExpressionBinary
-          | Expression EXPONENT Expression                          // #ExpressionBinary
-          | Expression PIPE Expression                          // #ExpressionBinary
-          | Expression AND_AND Expression                         // #ExpressionBinary
-          | Expression PIPE_PIPE Expression                         // #ExpressionBinary
-          | Expression QUESTION Expression COLON Expression           // #ExpressionIf
           ;
+// The content of the Expression are dynamically created with operators declarations
+// Usually, expressions are followed and defined statically, e.g like this:
+
+        //   | Expression DOT Expression                          // #ExpressionMember
+        //   | Expression MINUS_GREATER Expression                         // #ExpressionMemberPointer
+        //   | OPEN_PAREN Expression (COMMA Expression)* CLOSE_PAREN               // #ExpressionTuple
+        //   | Expression OPEN_BRACKET Expression (COMMA Expression)* CLOSE_BRACKET    // #ExpressionIndexer
+        //   | Expression OPEN_PAREN Expression (COMMA Expression)* CLOSE_PAREN    // #ExpressionInvoke
+        //   | 'typeof' OPEN_PAREN Expression CLOSE_PAREN
+        //   | ('throw'|'new'|'ref'|'out') Expression             // #ExpressionUnaryAction
+        //   | AND Expression                                     // #ExpressionAddressOf
+        //   | (TILDE|NOT|PLUS|MINUS) Expression                       // #ExpressionUnaryOperator
+        //   | Expression (STAR|DIVIDE|MODULUS) Expression                // #ExpressionBinary
+        //   | Expression (PLUS|MINUS) Expression                    // #ExpressionBinary
+        //   | Expression (LESS_LESS | GREATER_GREATER) Expression                // #ExpressionBinary
+        //   | Expression ('as' | 'is' | 'as?') TypePath          // #ExpressionAsIs
+        //   | Expression (LESS_EQUAL | GREATER_EQUAL | LESS | GREATER) Expression    // #ExpressionBinary
+        //   | Expression (EQUAL_EQUAL | NOT_EQUAL) Expression                // #ExpressionBinary
+        //   | Expression AND Expression                          // #ExpressionBinary
+        //   | Expression EXPONENT Expression                          // #ExpressionBinary
+        //   | Expression PIPE Expression                          // #ExpressionBinary
+        //   | Expression AND_AND Expression                         // #ExpressionBinary
+        //   | Expression PIPE_PIPE Expression                         // #ExpressionBinary
+        //   | Expression QUESTION Expression COLON Expression           // #ExpressionIf
 
 // Expression identifier (either a full type path with template arguments or a simple identifier)
 ExpressionIdentifier: ModulePath? ExpressionIdentifierPath;

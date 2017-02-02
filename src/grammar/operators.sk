@@ -376,7 +376,7 @@ public operator _ "..<" _
 // ===================
 
 // Group  (could be a tuple or closure...etc.)
-// TODO: Check where exactly this operator should be defined
+// TODO: Check where exactly this operator should be defined in terms of precedence
 operator "(" _ ")"
 {
     id: "Group"
@@ -391,7 +391,6 @@ public operator _ "," _
     precedence: 30
     associativity: left
 }
-
 
 // Precedence 20
 // ===================
