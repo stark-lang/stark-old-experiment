@@ -180,7 +180,7 @@
 		<key>keywords</key>
 		<dict>
 			<key>match</key>
-			<string>\b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b</string>
+			<string>\b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|constructor|where|default|as|ref|out|value)\b</string>
 			<key>name</key>
 			<string>keyword.type.sk</string>
 		</dict>

@@ -33,7 +33,7 @@ repository:
       match: \benum\b
   keywords:
     name: keyword.type.sk
-    match: \b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|where|default|as|ref|out|value)\b
+    match: \b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|constructor|where|default|as|ref|out|value)\b
   comment:
     patterns:
     - name: comment.block.sk
