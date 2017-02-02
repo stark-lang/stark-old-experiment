@@ -22,20 +22,21 @@
 //  - pattern matching
 //  - if let / while let
 //  - static members, inheritance and extensions
-//  - unsafe
 //  - overflow/checked/unchecked?
 //  - transient semantic
 //  - throws/try semantic
+//  - OptionType notation with ?
 //  - delegate lambda/closures
 //  - scoped descructor/defer / single ownership?
 //  - fixed array and raw arrays (non reference type)
-//  - yield return?
+//  - yield return / yield break ?
 //  - annotations
 //  - async / await
 //  - custom new operator
 //  - integrated tests
 //  - pure functions / side-effect free
 //  - constructor init semantic
+//  - syntax for slices same or different than array? (& runtime implications)
 
 parser grammar StarkParser;
 
@@ -45,8 +46,10 @@ options { tokenVocab=StarkLexer; }
 Declarations: Declaration*;
 
 Declaration: Modules
+           | OperatorDeclaration
            | Functions
            | Types
+           | NEW_LINE+
            ;
 
 // -------------------------------------------------------------------------
@@ -59,7 +62,7 @@ Modules: ModuleDeclaration
 
 ModuleDefinition: Visibility? 'module' ModuleFullPath ModuleBody;
 
-ModuleDeclaration: Visibility? 'module' ModuleFullPath NEW_LINE;
+ModuleDeclaration: Visibility? 'module' ModuleFullPath Eod;
 
 ModuleFullPath:  ModulePath? ModuleName;
 
@@ -72,7 +75,10 @@ ModuleBody: OPEN_BRACE Declarations CLOSE_BRACE;
 // -------------------------------------------------------------------------
 // Type Reference
 // -------------------------------------------------------------------------
-Type: Permission? TypePath STAR?;
+Type: TypeModifier* TypePath STAR?;
+
+TypeModifier: Permission
+            | Transient;
 
 TypePath: DelegateDefinition
         | ModulePath? TypePart;
@@ -117,7 +123,20 @@ Visibility: 'public'
           | 'protected'
           ;
 
+Inherit: 'virtual'
+       | 'abstract'
+       | 'override'
+       ;
+
 Partial: 'partial';
+
+Modifier: Visibility
+        | Partial
+        | Permission
+        | Inherit
+        | Permission
+        | Unsafe
+        ;
 
 Access: Permission
       | Ownership
@@ -126,6 +145,10 @@ Access: Permission
 Permission: 'immutable'
           | 'readonly'
           ;
+
+Unsafe: 'unsafe';
+
+Transient: 'transient';
 
 Ownership: 'isolated';
 
@@ -171,12 +194,7 @@ Functions: Function
 
 VariableType: Access? Type;
 
-FunctionInheritability: 'virtual'
-                      | 'override'
-                      | 'abstract'
-                      ;
-
-Function: Visibility? Permission? IDENTIFIER TemplateParameters? OPEN_PAREN FunctionParameters? CLOSE_PAREN FunctionReturnType? Contracts? (FunctionBody | NEW_LINE);
+Function: Modifier* IDENTIFIER TemplateParameters? OPEN_PAREN FunctionParameters? CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
 
 FunctionParameters: FunctionParameter (COMMA FunctionParameter)*;
 
@@ -186,7 +204,8 @@ FunctionReturnType: MINUS_GREATER VariableType;
 
 
 FunctionBody: StatementBlock
-            | FunctionExpression NEW_LINE;
+            | FunctionExpression Eod
+            | Eod;
 
 FunctionExpression: EQUAL_GREATER Expression;
 
@@ -202,13 +221,13 @@ FunctionExpression: EQUAL_GREATER Expression;
 // - trait properties
 // -------------------------------------------------------------------------
 
-Property: Visibility? IDENTIFIER COLON Type PropertyBody;
+Property: Modifier* IDENTIFIER COLON Type PropertyBody;
 
 PropertyBody: OPEN_BRACE PropertyGetter? PropertySetter? CLOSE_BRACE 
-            | FunctionExpression NEW_LINE;
+            | FunctionExpression Eod;
 
-PropertyGetter: 'get' Permission? Contracts? (StatementBlock | NEW_LINE);
-PropertySetter: 'set' Permission? Contracts? (StatementBlock | NEW_LINE);
+PropertyGetter: 'get' Permission? Contracts? (StatementBlock | Eod);
+PropertySetter: 'set' Permission? Contracts? (StatementBlock | Eod);
 
 
 // -------------------------------------------------------------------------
@@ -225,7 +244,20 @@ PropertySetter: 'set' Permission? Contracts? (StatementBlock | NEW_LINE);
 // NOTE: An operator definition starts exactly like a function, but the IDENTIFIER is `operator`
 // The main difference after is for the parameters (that accept string/chars to define the operator)
 
-Operator: Visibility? Permission? 'operator' TemplateParameters? OPEN_PAREN OperatorParameters CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
+// An OperatorDeclaration must happen before any usage of the Operator definition
+OperatorDeclaration: Visibility? 'operator' (CHAR|STRING|STRING_RAW|UNDERSCORES)+ OperatorDescription;
+
+OperatorDescription: OPEN_BRACE OperatorHint* CLOSE_BRACE;
+
+OperatorHint: 'precedence' COLON INTEGER Eod
+            | 'associativity' COLON ('right' | 'left') Eod
+            | 'builtin' COLON ExpressionLiteralBool Eod
+            | 'overridable' COLON ExpressionLiteralBool Eod
+            | 'assignment' COLON ExpressionLiteralBool Eod
+            | 'id' COLON STRING Eod
+            ;
+
+Operator: Modifier* 'operator' TemplateParameters? OPEN_PAREN OperatorParameters CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
 
 
 OperatorParameters: OperatorParametersMember
@@ -247,7 +279,7 @@ OperatorParametersBinary: FunctionParameter (CHAR|STRING|STRING_RAW) FunctionPar
 
 DelegateDefinition: 'delegate' TypeConstructor FunctionReturnType?; 
 
-Delegate: Visibility? 'delegate' IDENTIFIER TypeConstructor FunctionReturnType? NEW_LINE; 
+Delegate: Visibility? 'delegate' IDENTIFIER TypeConstructor FunctionReturnType? Eod; 
 
 // *************************************************************************
 // -------------------------------------------------------------------------
@@ -268,15 +300,11 @@ TypeConstructor: OPEN_PAREN FunctionParameters CLOSE_PAREN;
 // Struct/Class
 // -------------------------------------------------------------------------
 
-Class: Visibility? Partial? Permission? Inheritability? ('struct'|'class') ClassIdentifier TypeConstructor? Extends? Implements? TemplateParameterTypeConstraints? ClassBody;
+Class: Modifier* ('struct'|'class') ClassIdentifier TypeConstructor? Extends? Implements? TemplateParameterTypeConstraints? ClassBody;
 
 Extends: 'extends' TypePath;
 
 Implements: 'implements' TypePath (COMMA TypePath )+;
-
-Inheritability: 'virtual'
-              | 'abstract'
-              ;
 
 ClassIdentifier: IDENTIFIER TemplateParameters?;
 
@@ -286,13 +314,13 @@ ClassMember: ClassField
            | Functions
            ;
 
-ClassField: Visibility? IDENTIFIER COLON Type NEW_LINE;
+ClassField: Visibility? IDENTIFIER COLON Type Eod;
 
 // -------------------------------------------------------------------------
 // Trait
 // -------------------------------------------------------------------------
 
-Trait: Visibility? Partial? 'trait' TraitIdentifier TypeConstructor? Extends? TemplateParameterTypeConstraints? TraitBody;
+Trait: Modifier* 'trait' TraitIdentifier TypeConstructor? Extends? TemplateParameterTypeConstraints? TraitBody;
 
 TraitIdentifier: IDENTIFIER TemplateParameters?;
 
@@ -304,7 +332,7 @@ TraitMember: Functions
 // Enum
 // -------------------------------------------------------------------------
 
-Enum: Visibility? 'enum' EnumIdentifier (COLON IDENTIFIER)? TemplateParameterTypeConstraints? EnumBody;
+Enum: Modifier* 'enum' EnumIdentifier (COLON IDENTIFIER)? TemplateParameterTypeConstraints? EnumBody;
 
 EnumIdentifier: IDENTIFIER TemplateParameters?;
 
@@ -333,7 +361,7 @@ ExtensionMember: Functions
 // *************************************************************************
 
 // End of statement
-Eos: NEW_LINE | SEMI_COLON;
+Eod: NEW_LINE | SEMI_COLON;
 
 
 Statement: StatementFor
@@ -345,6 +373,7 @@ Statement: StatementFor
          | StatementReturn
          | StatementBlock
          | StatementAssign
+         | StatementUnsafe
          | StatementExpression
          | StatementEmpty
          ;
@@ -358,13 +387,13 @@ ForVariable: IDENTIFIER
 
 StatementLoop: LoopLabel? 'loop' StatementBlock;
 
-StatementBreak: 'break' IDENTIFIER? Eos;
+StatementBreak: 'break' IDENTIFIER? Eod;
 
-StatementContinue: 'continue' IDENTIFIER? Eos;
+StatementContinue: 'continue' IDENTIFIER? Eod;
 
-StatementReturn: 'return' Expression? Eos;
+StatementReturn: 'return' Expression? Eod;
 
-StatementExpression: Expression Eos;
+StatementExpression: Expression Eod;
 
 StatementIf: 'if' Statement StatementBlock StatementElseIf* StatementElse*;
 
@@ -373,13 +402,15 @@ StatementElseIf: 'else' 'if' Statement StatementBlock;
 StatementElse: 'else' StatementBlock;
 
 
-StatementLet: 'let' 'mutable'? IDENTIFIER (COLON VariableType)? (EQUAL Expression) Eos;
+StatementLet: 'let' 'mutable'? IDENTIFIER (COLON VariableType)? (EQUAL Expression) Eod;
+
+StatementUnsafe: 'unsafe' StatementBlock;
 
 
 StatementBlock: OPEN_BRACE Statement* CLOSE_BRACE;
 
-StatementAssign: Expression StatementAssignOperators Expression Eos
-               | Expression (PLUS_PLUS | MINUS_MINUS) Eos
+StatementAssign: Expression StatementAssignOperators Expression Eod
+               | Expression (PLUS_PLUS | MINUS_MINUS) Eod
                ;
 
 StatementAssignOperators: EQUAL
@@ -397,13 +428,18 @@ StatementAssignOperators: EQUAL
                         | AND_AND_EQUAL
                         ;
 
-StatementEmpty : Eos;                        
+StatementEmpty : Eod;                        
 
 // *************************************************************************
 // -------------------------------------------------------------------------
 // Expressions
 // -------------------------------------------------------------------------
 // *************************************************************************
+
+// NOTE: The following expressions are going to be removed
+// as I expect to be able to define all expressions through the operator semantic
+// to allow to build "builtin" operators as regular custom operators.
+// It means that even the "new" operator would be a specific operator.
 
 // From higher to lower precedence
 Expression: ExpressionIdentifier
