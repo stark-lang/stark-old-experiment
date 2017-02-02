@@ -43,8 +43,6 @@ namespace Stark.Compiler.Tests
                 {"*", TokenType.Star},
                 {"+", TokenType.Plus},
                 {"-", TokenType.Minus},
-                {"++", TokenType.PlusPlus},
-                {"--", TokenType.MinusMinus},
                 {"/", TokenType.Divide},
                 {"#", TokenType.Hash},
                 {"%", TokenType.Modulus},
@@ -60,35 +58,9 @@ namespace Stark.Compiler.Tests
                 {"{", TokenType.OpenBrace},
                 {"}", TokenType.CloseBrace},
                 {"<", TokenType.Less},
-                {"<<", TokenType.LessLess},
                 {">", TokenType.Greater},
-                {">>", TokenType.GreaterGreater},
-                {"!=", TokenType.NotEqual},
-                {"==", TokenType.EqualEqual},
-                {">=", TokenType.GreaterEqual},
-                {"=>", TokenType.EqualGreater},
-                {"->", TokenType.MinusGreater},
-                {"<=", TokenType.LessEqual},
-                {"+=", TokenType.PlusEqual},
-                {"-=", TokenType.MinusEqual},
-                {"%=", TokenType.ModulusEqual},
-                {"*=", TokenType.StarEqual},
-                {"/=", TokenType.DivideEqual},
-                {"<<=", TokenType.LessLessEqual},
-                {">>=", TokenType.GreaterGreaterEqual},
-                {"|=", TokenType.PipeEqual},
-                {"&=", TokenType.AndEqual},
-                {"^=", TokenType.ExponentEqual},
-                {"||=", TokenType.PipePipeEqual},
-                {"&&=", TokenType.AndAndEqual},
                 {"&", TokenType.And},
-                {"&&", TokenType.AndAnd},
                 {"?", TokenType.Question},
-                {"??", TokenType.QuestionQuestion},
-                {"||", TokenType.PipePipe},
-                {"..", TokenType.DotDot},
-                {"..<", TokenType.DotDotLess},
-                {"...", TokenType.DotDotDot},
                 {"\r", TokenType.NewLine},
                 {"\r\n", TokenType.NewLine},
                 {"\n", TokenType.NewLine},
@@ -179,10 +151,11 @@ namespace Stark.Compiler.Tests
         public void ParseIntegerFollowedByRange()
         {
             var list = ParseTokens("1..");
-            Assert.AreEqual(3, list.Count);
+            Assert.AreEqual(4, list.Count);
             Assert.AreEqual(new Token(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
-            Assert.AreEqual(new Token(TokenType.DotDot, new TextPosition(1, 0, 1), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new Token(TokenType.Dot, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
+            Assert.AreEqual(new Token(TokenType.Dot, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[2]);
+            Assert.AreEqual(Token.Eof, list[3]);
         }
 
         [Test]

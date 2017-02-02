@@ -64,42 +64,6 @@ namespace Stark.Compiler.Parsing
         [TokenText("::")]
         ColonColon,
 
-        [TokenText("+=")]
-        PlusEqual,
-
-        [TokenText("-=")]
-        MinusEqual,
-
-        [TokenText("%=")]
-        ModulusEqual,
-
-        [TokenText("*=")]
-        StarEqual,
-
-        [TokenText("/=")]
-        DivideEqual,
-
-        [TokenText("<<=")]
-        LessLessEqual, 
-
-        [TokenText(">>=")]
-        GreaterGreaterEqual,
-
-        [TokenText("|=")]
-        PipeEqual,
-
-        [TokenText("&=")]
-        AndEqual,
-
-        [TokenText("^=")]
-        ExponentEqual,
-
-        [TokenText("||=")]
-        PipePipeEqual,
-
-        [TokenText("&&=")]
-        AndAndEqual,
-
         [TokenText("=")]
         Equal,
 
@@ -112,44 +76,14 @@ namespace Stark.Compiler.Parsing
         [TokenText("&")]
         And,
 
-        [TokenText("&&")]
-        AndAnd,
-
-        [TokenText("||")]
-        PipePipe,
-
         [TokenText("?")]
         Question,
-
-        [TokenText("??")]
-        QuestionQuestion,
-
-        [TokenText("==")]
-        EqualEqual,
-
-        [TokenText("!=")]
-        NotEqual,
 
         [TokenText("<")]
         Less,
 
-        [TokenText("<<")]
-        LessLess,
-
         [TokenText(">")]
         Greater,
-
-        [TokenText(">>")]
-        GreaterGreater,
-
-        [TokenText("<=")]
-        LessEqual,
-
-        [TokenText(">=")]
-        GreaterEqual,
-
-        [TokenText("=>")]
-        EqualGreater,
 
         [TokenText("/")]
         Divide,
@@ -163,17 +97,8 @@ namespace Stark.Compiler.Parsing
         [TokenText("+")]
         Plus,
 
-        [TokenText("++")]
-        PlusPlus,
-
         [TokenText("-")]
         Minus,
-
-        [TokenText("->")]
-        MinusGreater,
-
-        [TokenText("--")]
-        MinusMinus,
 
         [TokenText("%")]
         Modulus,
@@ -183,15 +108,6 @@ namespace Stark.Compiler.Parsing
 
         [TokenText(".")]
         Dot,
-
-        [TokenText("..")]
-        DotDot,
-
-        [TokenText("...")]
-        DotDotDot,
-
-        [TokenText("..<")]
-        DotDotLess,
 
         [TokenText("(")]
         OpenParen,

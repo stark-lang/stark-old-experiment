@@ -144,22 +144,10 @@ namespace Stark.Compiler.Parsing
                     break;
                 case '^':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.ExponentEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Exponent, start, start);
                     break;
                 case '*':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.StarEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Star, start, start);
                     break;
                 case '/':
@@ -169,60 +157,18 @@ namespace Stark.Compiler.Parsing
                         ReadComment(start);
                         break;
                     }
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.DivideEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Divide, start, start);
                     break;
                 case '+':
                     NextChar();
-                    if (_c == '+')
-                    {
-                        _token = new Token(TokenType.PlusPlus, start, _position);
-                        NextChar();
-                        break;
-                    }
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.PlusEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Plus, start, start);
                     break;
                 case '-':
                     NextChar();
-                    if (_c == '-')
-                    {
-                        _token = new Token(TokenType.MinusMinus, start, _position);
-                        NextChar();
-                        break;
-                    }
-                    if (_c == '>')
-                    {
-                        _token = new Token(TokenType.MinusGreater, start, _position);
-                        NextChar();
-                        break;
-                    }
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.MinusEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Minus, start, start);
                     break;
                 case '%':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.ModulusEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Modulus, start, start);
                     break;
                 case ',':
@@ -231,158 +177,36 @@ namespace Stark.Compiler.Parsing
                     break;
                 case '&':
                     NextChar();
-                    if (_c == '&')
-                    {
-                        _token = new Token(TokenType.AndAnd, start, _position);
-                        NextChar();
-                        if (_c == '=')
-                        {
-                            _token = new Token(TokenType.AndAndEqual, start, _position);
-                            NextChar();
-                            break;
-                        }
-                        break;
-                    }
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.AndEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.And, start, start);
                     break;
                 case '?':
                     NextChar();
-                    if (_c == '?')
-                    {
-                        _token = new Token(TokenType.QuestionQuestion, start, _position);
-                        NextChar();
-                        break;
-                    }
-
                     _token = new Token(TokenType.Question, start, start);
                     break;
                 case '|':
                     NextChar();
-                    if (_c == '|')
-                    {
-                        _token = new Token(TokenType.PipePipe, start, _position);
-                        NextChar();
-                        if (_c == '=')
-                        {
-                            _token = new Token(TokenType.PipePipeEqual, start, _position);
-                            NextChar();
-                            break;
-                        }
-                        break;
-                    }
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.PipeEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Pipe, start, start);
                     break;
                 case '.':
                     NextChar();
-                    if (_c == '.')
-                    {
-                        var index = _position;
-                        NextChar();
-                        if (_c == '<')
-                        {
-                            _token = new Token(TokenType.DotDotLess, start, _position);
-                            NextChar();
-                            break;
-                        }
-
-                        if (_c == '.')
-                        {
-                            _token = new Token(TokenType.DotDotDot, start, _position);
-                            NextChar();
-                            break;
-                        }
-
-                        _token = new Token(TokenType.DotDot, start, index);
-                        break;
-                    }
                     _token = new Token(TokenType.Dot, start, start);
                     break;
 
                 case '!':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.NotEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Not, start, start);
                     break;
 
                 case '=':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.EqualEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
-                    if (_c == '>')
-                    {
-                        _token = new Token(TokenType.EqualGreater, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Equal, start, start);
                     break;
                 case '<':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.LessEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
-
-                    if (_c == '<')
-                    {
-                        _token = new Token(TokenType.LessLess, start, _position);
-                        NextChar();
-                        if (_c == '=')
-                        {
-                            _token = new Token(TokenType.LessLessEqual, start, _position);
-                            NextChar();
-                            break;
-                        }
-                        break;
-                    }
-
                     _token = new Token(TokenType.Less, start, start);
                     break;
                 case '>':
                     NextChar();
-                    if (_c == '=')
-                    {
-                        _token = new Token(TokenType.GreaterEqual, start, _position);
-                        NextChar();
-                        break;
-                    }
-
-                    if (_c == '>')
-                    {
-                        _token = new Token(TokenType.GreaterGreater, start, _position);
-                        NextChar();
-                        if (_c == '=')
-                        {
-                            _token = new Token(TokenType.GreaterGreaterEqual, start, _position);
-                            NextChar();
-                            break;
-                        }
-                        break;
-                    }
-
                     _token = new Token(TokenType.Greater, start, start);
                     break;
                 case '(':
