@@ -92,7 +92,7 @@ operator _ "." _
 
 operator _ "->" _
 {
-    id: "ReturnTypeOrPointerAccess"
+    id: "MemberPointer"
     builtin: true
     precedence: 180
     associativity: left
@@ -101,10 +101,18 @@ operator _ "->" _
 
 operator "typeof" _
 {
-    id: "ReturnTypeOrPointerAccess"
+    id: "TypeOf"
     builtin: true
     precedence: 180
     associativity: left
+}
+
+operator "new" _
+{
+    id: "New"
+    builtin: true
+    precedence: 180
+    associativity: right
 }
 
 // Precedence 170
@@ -162,14 +170,6 @@ operator "sizeof" _
     associativity: right
 }
 
-operator "new" _
-{
-    id: "New"
-    builtin: true
-    precedence: 170
-    associativity: right
-}
-
 public operator "throw" _
 {
     id: "Throw"
@@ -186,17 +186,23 @@ public operator "ref" _
     associativity: right
 }
 
-public operator "out" _
+public operator _ "is" _
 {
-    id: "out"
-    builtin: true
+    id: "is"
     precedence: 170
-    associativity: right
+    associativity: left
 }
 
 public operator _ "as" _
 {
     id: "as"
+    precedence: 170
+    associativity: left
+}
+
+public operator _ "as?" _
+{
+    id: "as?"
     precedence: 170
     associativity: left
 }
