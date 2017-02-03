@@ -4,15 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{894B539F-C457-4A89-8856-69F08D93E883}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{B857F54C-E16E-4307-A680-5D828220E56B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Stark.Compiler</RootNamespace>
-    <AssemblyName>Stark.Compiler</AssemblyName>
+    <RootNamespace>SpecsToAntlrApp</RootNamespace>
+    <AssemblyName>SpecsToAntlrApp</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -20,8 +22,10 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,22 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Parsing\char32.cs" />
-    <Compile Include="Parsing\CharHelper.CharacterRanges.cs" />
-    <Compile Include="Parsing\CharHelper.cs" />
-    <Compile Include="Parsing\CharReaderException.cs" />
-    <Compile Include="Parsing\CharacterIterator.cs" />
-    <Compile Include="Collections\Iterator.cs" />
-    <Compile Include="Parsing\Tokenizer.cs" />
-    <Compile Include="Parsing\LogMessage.cs" />
-    <Compile Include="Parsing\SourceSpan.cs" />
-    <Compile Include="Parsing\StringCharacterIterator.cs" />
-    <Compile Include="Parsing\Token.cs" />
-    <Compile Include="Parsing\TokenTextAttribute.cs" />
-    <Compile Include="Parsing\TokenType.cs" />
-    <Compile Include="Parsing\TokenTypeExtensions.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Parsing\TextPosition.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

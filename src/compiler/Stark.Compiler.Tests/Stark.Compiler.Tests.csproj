@@ -191,9 +191,9 @@
     <Antlr4 Include="..\..\grammar\StarkLexer.g4">
       <Link>StarkLexer.g4</Link>
       <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>Stark.Compiler.Tests</CustomToolNamespace>
-      <Visitor>False</Visitor>
+      <CustomToolNamespace>Stark.Compiler</CustomToolNamespace>
       <Listener>False</Listener>
+      <Visitor>False</Visitor>
     </Antlr4>
     <None Include="App.config" />
     <None Include="packages.config" />
@@ -220,10 +220,18 @@
     <Error Condition="!Exists('..\..\packages\Antlr4.CodeGenerator.4.5.4-beta001\build\Antlr4.CodeGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Antlr4.CodeGenerator.4.5.4-beta001\build\Antlr4.CodeGenerator.targets'))" />
   </Target>
   <Import Project="..\..\packages\Antlr4.CodeGenerator.4.5.4-beta001\build\Antlr4.CodeGenerator.targets" Condition="Exists('..\..\packages\Antlr4.CodeGenerator.4.5.4-beta001\build\Antlr4.CodeGenerator.targets')" />
+  <PropertyGroup>
+    <StarkSpecsTokens>$(SolutionDir)..\specs\tokens.md</StarkSpecsTokens>
+    <StarkANTLRLexer>$(SolutionDir)grammar\StarkLexer.g4</StarkANTLRLexer>
+    <StarkSpecsApp>$(SolutionDir)tools\SpecsToAntlrApp\bin\$(ConfigurationName)\SpecsToAntlrApp.exe</StarkSpecsApp>
+  </PropertyGroup>
+  <Target Name="ConvertSpecsToANTLR" Inputs="$(StarkSpecsTokens);$(StarkSpecsApp)" Outputs="$(StarkANTLRLexer)">
+    <Exec Command="&quot;$(StarkSpecsApp)&quot; &quot;$(StarkSpecsTokens)&quot; &quot;$(StarkANTLRLexer)&quot;" />
+  </Target>
+  <Target Name="BeforeBuild" DependsOnTargets="ConvertSpecsToANTLR">
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
   </Target>
   -->

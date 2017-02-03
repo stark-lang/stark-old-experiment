@@ -37,92 +37,89 @@ namespace Stark.Compiler.Parsing
 
         StringRaw,
 
-        [TokenText("`")]
-        GraveAccent,
+        [TokenText("!")]
+        Exclamation,
 
-        [TokenText("~")]
-        Tilde,
-
-        [TokenText(";")]
-        SemiColon,
+        [TokenText("#")]
+        Number,
 
         [TokenText("$")]
         Dollar,
 
-        [TokenText("@")]
-        At,
-
-        [TokenText("#")]
-        Hash,
-
-        [TokenText("^")]
-        Exponent,
-
-        [TokenText(":")]
-        Colon,
-
-        [TokenText("::")]
-        ColonColon,
-
-        [TokenText("=")]
-        Equal,
-
-        [TokenText("|")]
-        Pipe,
-
-        [TokenText("!")]
-        Not, 
+        [TokenText("%")]
+        Percent,
 
         [TokenText("&")]
-        And,
+        Ampersand,
 
-        [TokenText("?")]
-        Question,
+        [TokenText("(")]
+        OpenParenthesis,
 
-        [TokenText("<")]
-        Less,
+        [TokenText(")")]
+        CloseParenthesis,
 
-        [TokenText(">")]
-        Greater,
 
-        [TokenText("/")]
-        Divide,
-
-        [TokenText("\\")]
-        Backslash,
 
         [TokenText("*")]
-        Star,
+        Asterisk,
 
         [TokenText("+")]
         Plus,
 
-        [TokenText("-")]
-        Minus,
-
-        [TokenText("%")]
-        Modulus,
-
         [TokenText(",")]
         Comma,
+
+        [TokenText("-")]
+        Minus,
 
         [TokenText(".")]
         Dot,
 
-        [TokenText("(")]
-        OpenParen,
-        [TokenText(")")]
-        CloseParen,
+        [TokenText("/")]
+        Slash,
 
-        [TokenText("{")]
-        OpenBrace,
-        [TokenText("}")]
-        CloseBrace,
+        [TokenText(":")]
+        Colon,
+
+        [TokenText(";")]
+        SemiColon,
+
+        [TokenText("<")]
+        LessThan,
+
+        [TokenText("=")]
+        Equal,
+
+        [TokenText(">")]
+        GreaterThan,
+
+        [TokenText("?")]
+        Question,
+
+        [TokenText("@")]
+        At,
 
         [TokenText("[")]
         OpenBracket,
+        [TokenText("\\")]
+        Backslash,
         [TokenText("]")]
         CloseBracket,
+
+        [TokenText("^")]
+        Caret,
+        [TokenText("`")]
+        GraveAccent,
+
+        [TokenText("{")]
+        OpenBrace,
+        [TokenText("|")]
+        Pipe,
+        [TokenText("}")]
+        CloseBrace,
+
+        [TokenText("~")]
+        Tilde,
 
         Eof,
     }

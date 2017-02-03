@@ -105,12 +105,6 @@ namespace Stark.Compiler.Parsing
                     break;
                 case ':':
                     NextChar();
-                    if (_c == ':')
-                    {
-                        _token = new Token(TokenType.ColonColon, start, _position);
-                        NextChar();
-                        break;
-                    }
                     _token = new Token(TokenType.Colon, start, start);
                     break;
                 case '$':
@@ -118,7 +112,7 @@ namespace Stark.Compiler.Parsing
                     NextChar();
                     break;
                 case '#':
-                    _token = new Token(TokenType.Hash, start, start);
+                    _token = new Token(TokenType.Number, start, start);
                     NextChar();
                     break;
                 case '~':
@@ -144,11 +138,11 @@ namespace Stark.Compiler.Parsing
                     break;
                 case '^':
                     NextChar();
-                    _token = new Token(TokenType.Exponent, start, start);
+                    _token = new Token(TokenType.Caret, start, start);
                     break;
                 case '*':
                     NextChar();
-                    _token = new Token(TokenType.Star, start, start);
+                    _token = new Token(TokenType.Asterisk, start, start);
                     break;
                 case '/':
                     NextChar();
@@ -157,7 +151,7 @@ namespace Stark.Compiler.Parsing
                         ReadComment(start);
                         break;
                     }
-                    _token = new Token(TokenType.Divide, start, start);
+                    _token = new Token(TokenType.Slash, start, start);
                     break;
                 case '+':
                     NextChar();
@@ -169,7 +163,7 @@ namespace Stark.Compiler.Parsing
                     break;
                 case '%':
                     NextChar();
-                    _token = new Token(TokenType.Modulus, start, start);
+                    _token = new Token(TokenType.Percent, start, start);
                     break;
                 case ',':
                     _token = new Token(TokenType.Comma, start, start);
@@ -177,7 +171,7 @@ namespace Stark.Compiler.Parsing
                     break;
                 case '&':
                     NextChar();
-                    _token = new Token(TokenType.And, start, start);
+                    _token = new Token(TokenType.Ampersand, start, start);
                     break;
                 case '?':
                     NextChar();
@@ -194,7 +188,7 @@ namespace Stark.Compiler.Parsing
 
                 case '!':
                     NextChar();
-                    _token = new Token(TokenType.Not, start, start);
+                    _token = new Token(TokenType.Exclamation, start, start);
                     break;
 
                 case '=':
@@ -203,18 +197,18 @@ namespace Stark.Compiler.Parsing
                     break;
                 case '<':
                     NextChar();
-                    _token = new Token(TokenType.Less, start, start);
+                    _token = new Token(TokenType.LessThan, start, start);
                     break;
                 case '>':
                     NextChar();
-                    _token = new Token(TokenType.Greater, start, start);
+                    _token = new Token(TokenType.GreaterThan, start, start);
                     break;
                 case '(':
-                    _token = new Token(TokenType.OpenParen, _position, _position);
+                    _token = new Token(TokenType.OpenParenthesis, _position, _position);
                     NextChar();
                     break;
                 case ')':
-                    _token = new Token(TokenType.CloseParen, _position, _position);
+                    _token = new Token(TokenType.CloseParenthesis, _position, _position);
                     NextChar();
                     break;
                 case '[':

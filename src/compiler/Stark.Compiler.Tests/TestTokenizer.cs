@@ -36,30 +36,29 @@ namespace Stark.Compiler.Tests
                 {"~", TokenType.Tilde},
                 {"\\", TokenType.Backslash},
                 {"`", TokenType.GraveAccent},
-                {"^", TokenType.Exponent},
+                {"^", TokenType.Caret},
                 {";", TokenType.SemiColon},
                 {":", TokenType.Colon},
-                {"::", TokenType.ColonColon},
-                {"*", TokenType.Star},
+                {"*", TokenType.Asterisk},
                 {"+", TokenType.Plus},
                 {"-", TokenType.Minus},
-                {"/", TokenType.Divide},
-                {"#", TokenType.Hash},
-                {"%", TokenType.Modulus},
+                {"/", TokenType.Slash},
+                {"#", TokenType.Number},
+                {"%", TokenType.Percent},
                 {"=", TokenType.Equal},
-                {"!", TokenType.Not},
+                {"!", TokenType.Exclamation},
                 {"|", TokenType.Pipe},
                 {",", TokenType.Comma},
                 {".", TokenType.Dot},
-                {"(", TokenType.OpenParen},
-                {")", TokenType.CloseParen},
+                {"(", TokenType.OpenParenthesis},
+                {")", TokenType.CloseParenthesis},
                 {"[", TokenType.OpenBracket},
                 {"]", TokenType.CloseBracket},
                 {"{", TokenType.OpenBrace},
                 {"}", TokenType.CloseBrace},
-                {"<", TokenType.Less},
-                {">", TokenType.Greater},
-                {"&", TokenType.And},
+                {"<", TokenType.LessThan},
+                {">", TokenType.GreaterThan},
+                {"&", TokenType.Ampersand},
                 {"?", TokenType.Question},
                 {"\r", TokenType.NewLine},
                 {"\r\n", TokenType.NewLine},
@@ -408,7 +407,7 @@ a single line
             Assert.AreEqual(new Token(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), tokens[0]);
             Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(3, 0, 3)), tokens[1]);
             Assert.AreEqual(new Token(TokenType.Spaces, new TextPosition(4, 0, 4), new TextPosition(4, 0, 4)), tokens[2]);
-            Assert.AreEqual(new Token(TokenType.Divide, new TextPosition(5, 0, 5), new TextPosition(5, 0, 5)), tokens[3]);
+            Assert.AreEqual(new Token(TokenType.Slash, new TextPosition(5, 0, 5), new TextPosition(5, 0, 5)), tokens[3]);
             Assert.AreEqual(new Token(TokenType.NewLine, new TextPosition(6, 0, 6), new TextPosition(6, 0, 6)), tokens[4]);
             Assert.AreEqual(new Token(TokenType.OpenBrace, new TextPosition(7, 1, 0), new TextPosition(7, 1, 0)), tokens[5]);
             Assert.AreEqual(new Token(TokenType.Eof, TextPosition.Eof, TextPosition.Eof), tokens[6]);

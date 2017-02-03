@@ -27,7 +27,7 @@
 //  - throws/try semantic
 //  - OptionType notation with ?
 //  - delegate lambda/closures
-//  - scoped descructor/defer / single ownership?
+//  - scoped descructor / single ownership?
 //  - fixed array and raw arrays (non reference type)
 //  - yield return / yield break ?
 //  - annotations
@@ -66,7 +66,7 @@ ModuleDeclaration: Visibility? 'module' ModuleFullPath Eod;
 
 ModuleFullPath:  ModulePath? ModuleName;
 
-ModulePath: COLON_COLON? (ModuleName COLON_COLON)+;
+ModulePath: '::'? (ModuleName '::')+;
 
 ModuleName: IDENTIFIER;
 
@@ -75,7 +75,7 @@ ModuleBody: OPEN_BRACE Declarations CLOSE_BRACE;
 // -------------------------------------------------------------------------
 // Type Reference
 // -------------------------------------------------------------------------
-Type: TypeModifier* TypePath STAR?;
+Type: TypeModifier* TypePath ASTERISK?;
 
 TypeModifier: Permission
             | Transient;
@@ -89,13 +89,13 @@ TypePart: TypePart DOT IDENTIFIER TypeArguments?
 TypeFinalPart: TypeFinalPart OPEN_BRACKET CLOSE_BRACKET
              | IDENTIFIER TypeArguments?;
 
-TypeArguments: LESS Type (COMMA Type)* GREATER;
+TypeArguments: LESS_THAN Type (COMMA Type)* GREATER_THAN;
 
 
 // -------------------------------------------------------------------------
 // Template Parameters
 // -------------------------------------------------------------------------
-TemplateParameters: LESS TemplateParameter (COMMA TemplateParameter)* CLOSE_PAREN;
+TemplateParameters: LESS_THAN TemplateParameter (COMMA TemplateParameter)* GREATER_THAN;
 
 TemplateParameter: TemplateParameterName
                 | TemplateParameterTyped
@@ -194,7 +194,7 @@ Functions: Function
 
 VariableType: Access? Type;
 
-Function: Modifier* IDENTIFIER TemplateParameters? OPEN_PAREN FunctionParameters? CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
+Function: Modifier* IDENTIFIER TemplateParameters? OPEN_PARENTHESIS FunctionParameters? CLOSE_PARENTHESIS FunctionReturnType? Contracts? FunctionBody;
 
 FunctionParameters: FunctionParameter (COMMA FunctionParameter)*;
 
@@ -259,7 +259,7 @@ OperatorHint: 'precedence' COLON INTEGER Eod
             | 'id' COLON STRING Eod
             ;
 
-OperatorDefinition: Modifier* 'operator' TemplateParameters? OPEN_PAREN OperatorParameters CLOSE_PAREN FunctionReturnType? Contracts? FunctionBody;
+OperatorDefinition: Modifier* 'operator' TemplateParameters? OPEN_PARENTHESIS OperatorParameters CLOSE_PARENTHESIS FunctionReturnType? Contracts? FunctionBody;
 
 
 OperatorParameters: OperatorParametersMember
@@ -296,7 +296,7 @@ Types: Class
      | Delegate
      ;
 
-TypeConstructor: OPEN_PAREN FunctionParameters CLOSE_PAREN;
+TypeConstructor: OPEN_PARENTHESIS FunctionParameters CLOSE_PARENTHESIS;
 
 // -------------------------------------------------------------------------
 // Struct/Class
@@ -340,7 +340,7 @@ EnumIdentifier: IDENTIFIER TemplateParameters?;
 
 EnumBody: OPEN_BRACE EnumMembers? CLOSE_BRACE;
 
-EnumMembers: EnumMember (COMMA EnumMember)* COMMA?;
+EnumMembers: (EnumMember Eod)*;
 
 EnumMember: IDENTIFIER
           | IDENTIFIER TypeConstructor
@@ -376,6 +376,7 @@ Statement: StatementFor
          | StatementBlock
          | StatementAssign
          | StatementUnsafe
+         | StatementDefer
          | StatementExpression
          | StatementEmpty
          ;
@@ -385,7 +386,7 @@ StatementFor: LoopLabel? 'for' ForVariable 'in' Expression StatementBlock;
 LoopLabel: IDENTIFIER COLON;
 
 ForVariable: IDENTIFIER
-           | OPEN_PAREN IDENTIFIER COMMA IDENTIFIER CLOSE_PAREN;
+           | OPEN_PARENTHESIS IDENTIFIER COMMA IDENTIFIER CLOSE_PARENTHESIS;
 
 StatementLoop: LoopLabel? 'loop' StatementBlock;
 
@@ -407,6 +408,8 @@ StatementElse: 'else' StatementBlock;
 StatementLet: 'let' 'mutable'? IDENTIFIER (COLON VariableType)? (EQUAL Expression) Eod;
 
 StatementUnsafe: 'unsafe' StatementBlock;
+
+StatementDefer: 'defer' StatementBlock;
 
 
 StatementBlock: OPEN_BRACE Statement* CLOSE_BRACE;
@@ -469,7 +472,7 @@ Expression: ExpressionIdentifier
 // Expression identifier (either a full type path with template arguments or a simple identifier)
 ExpressionIdentifier: ModulePath? ExpressionIdentifierPath;
 
-ExpressionTemplateArgument: ModulePath? ExpressionIdentifierSubPath STAR 
+ExpressionTemplateArgument: ModulePath? ExpressionIdentifierSubPath ASTERISK 
                           | ExpressionLiteralSimple
                           ;
 
@@ -480,15 +483,17 @@ ExpressionIdentifierSubPath: ExpressionIdentifierPath DOT ExpressionSimpleType
 
 ExpressionSimpleType: IDENTIFIER ExpressionTemplateArguments?;
 
-ExpressionTemplateArguments:  LESS ExpressionTemplateArgument (COMMA ExpressionTemplateArgument)* GREATER;
+ExpressionTemplateArguments:  LESS_THAN ExpressionTemplateArgument (COMMA ExpressionTemplateArgument)* GREATER_THAN;
 
 
 // Literal Expressions
 LiteralTypeSuffix: ExpressionIdentifier;
 
 // In the custom parser, we don't expect any whitespace between the literal and its suffix
-ExpressionLiteral: ExpressionLiteralSimple LiteralTypeSuffix?;
-
+ExpressionLiteral: ExpressionThisLiteral
+                 | ExpressionSpecialLiteral
+                 | ExpressionLiteralSimple LiteralTypeSuffix?
+                 ;
 
 ExpressionLiteralSimple: ExpressionLiteralBool
                        | INTEGER
@@ -500,5 +505,15 @@ ExpressionLiteralSimple: ExpressionLiteralBool
                        | STRING
                        | CHAR
                        ;
+
+// Special literal: 
+ExpressionSpecialLiteral: '#file'
+                        | '#line'
+                        | '#column'
+                        | '#function'
+                        ;
+
+ExpressionThisLiteral: 'this';
+
 
 ExpressionLiteralBool: 'true' | 'false';

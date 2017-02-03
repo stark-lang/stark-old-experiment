@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stark.Compiler", "compiler\Stark.Compiler\Stark.Compiler.csproj", "{894B539F-C457-4A89-8856-69F08D93E883}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stark.Compiler.Tests", "compiler\Stark.Compiler.Tests\Stark.Compiler.Tests.csproj", "{4276D5AF-9CC4-4EB0-A82C-C644D13CE251}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B857F54C-E16E-4307-A680-5D828220E56B} = {B857F54C-E16E-4307-A680-5D828220E56B}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDGenApp", "tools\XIDGenApp\XIDGenApp.csproj", "{502AC84C-38F9-48EC-90AA-A3D460A84797}"
 EndProject
@@ -18,6 +21,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10-Grammar", "10-Grammar", 
 		grammar\StarkLexer.g4 = grammar\StarkLexer.g4
 		grammar\StarkParser.g4 = grammar\StarkParser.g4
 		grammar\XID_Start_Continue.g4 = grammar\XID_Start_Continue.g4
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpecsToAntlrApp", "tools\SpecsToAntlrApp\SpecsToAntlrApp.csproj", "{B857F54C-E16E-4307-A680-5D828220E56B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00-Specs", "00-Specs", "{C3BECB96-420D-4503-9604-FFCFE44D52C4}"
+	ProjectSection(SolutionItems) = preProject
+		..\specs\tokens.md = ..\specs\tokens.md
 	EndProjectSection
 EndProject
 Global
@@ -38,6 +48,10 @@ Global
 		{502AC84C-38F9-48EC-90AA-A3D460A84797}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{502AC84C-38F9-48EC-90AA-A3D460A84797}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{502AC84C-38F9-48EC-90AA-A3D460A84797}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B857F54C-E16E-4307-A680-5D828220E56B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B857F54C-E16E-4307-A680-5D828220E56B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B857F54C-E16E-4307-A680-5D828220E56B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B857F54C-E16E-4307-A680-5D828220E56B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,5 +60,6 @@ Global
 		{894B539F-C457-4A89-8856-69F08D93E883} = {D6E60B94-BD58-4618-BC1E-E27A45F2A0AE}
 		{4276D5AF-9CC4-4EB0-A82C-C644D13CE251} = {D6E60B94-BD58-4618-BC1E-E27A45F2A0AE}
 		{502AC84C-38F9-48EC-90AA-A3D460A84797} = {1AE76739-7B96-4823-8A07-B6B81231BB72}
+		{B857F54C-E16E-4307-A680-5D828220E56B} = {1AE76739-7B96-4823-8A07-B6B81231BB72}
 	EndGlobalSection
 EndGlobal
