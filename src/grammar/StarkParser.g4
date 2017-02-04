@@ -368,6 +368,7 @@ Eod: NEW_LINE | SEMI_COLON;
 
 Statement: StatementFor
          | StatementLoop
+         | StatementWhile
          | StatementLet
          | StatementIf
          | StatementBreak
@@ -390,6 +391,10 @@ ForVariable: IDENTIFIER
 
 StatementLoop: LoopLabel? 'loop' StatementBlock;
 
+StatementWhile: LoopLabel? 'while' LetIf? Expression StatementBlock;
+
+LetIf: 'let' IDENTIFIER EQUAL;
+
 StatementBreak: 'break' IDENTIFIER? Eod;
 
 StatementContinue: 'continue' IDENTIFIER? Eod;
@@ -398,9 +403,9 @@ StatementReturn: 'return' Expression? Eod;
 
 StatementExpression: Expression Eod;
 
-StatementIf: 'if' Statement StatementBlock StatementElseIf* StatementElse*;
+StatementIf: 'if' LetIf? Expression StatementBlock StatementElseIf* StatementElse*;
 
-StatementElseIf: 'else' 'if' Statement StatementBlock;
+StatementElseIf: 'else' 'if' LetIf? Expression StatementBlock;
 
 StatementElse: 'else' StatementBlock;
 
