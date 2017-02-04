@@ -350,7 +350,7 @@ EnumMember: IDENTIFIER
 // -------------------------------------------------------------------------
 // Extension
 // -------------------------------------------------------------------------
-Extension: Visibility? Extends Implements? TemplateParameterTypeConstraints? ExtensionBody;
+Extension: Visibility? 'extends' TemplateParameters? TypePath Implements? TemplateParameterTypeConstraints? ExtensionBody;
 
 ExtensionBody: OPEN_BRACE ExtensionMember* CLOSE_BRACE;
 
