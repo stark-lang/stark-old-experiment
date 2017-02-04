@@ -404,13 +404,14 @@ StatementElseIf: 'else' 'if' Statement StatementBlock;
 
 StatementElse: 'else' StatementBlock;
 
-
-StatementLet: 'let' 'mutable'? IDENTIFIER (COLON VariableType)? (EQUAL Expression) Eod;
+StatementLet: 'let' IDENTIFIER (COLON VariableType)? EQUAL Expression Eod
+            | 'let' 'mutable' IDENTIFIER EQUAL Expression Eod
+            | 'let' 'mutable' IDENTIFIER COLON VariableType (EQUAL Expression)? Eod
+            ;
 
 StatementUnsafe: 'unsafe' StatementBlock;
 
 StatementDefer: 'defer' StatementBlock;
-
 
 StatementBlock: OPEN_BRACE Statement* CLOSE_BRACE;
 
