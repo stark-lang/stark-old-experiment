@@ -133,6 +133,7 @@ namespace Stark.Compiler.Tests
                 {"3.01235e1", TokenType.Float},
                 {"4.01235e-1", TokenType.Float},
                 {"5.01235e+1", TokenType.Float},
+                {"4_1.0_1_235e-1_2", TokenType.Float},
             });
         }
 
