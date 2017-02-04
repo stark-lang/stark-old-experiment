@@ -28,6 +28,7 @@
 //  - OptionType notation with ?
 //  - delegate lambda/closures
 //  - scoped descructor / single ownership?
+//  - complex data initializers (for array {...}, list, dictionary...etc.)
 //  - fixed array and raw arrays (non reference type)
 //  - yield return / yield break ?
 //  - annotations
