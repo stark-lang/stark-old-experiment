@@ -20,7 +20,7 @@ repository:
       '1': {name: keyword.type.sk}
   visibility-modifiers:
     name: storage.modifier.sk
-    match: (?<!\.)\b(new|public|protected|internal|private|abstract|virtual|override|sealed|static|partial|readonly|volatile|immutable|mutable|const|extern|async|unsafe|transient|isolated|scoped)\b
+    match: (?<!\.)\b(abstract|async|const|extern|immutable|internal|isolated|mutable|new|override|partial|private|protected|public|readonly|scoped|sealed|static|transient|unsafe|virtual|volatile)\b
   type-declarations:
     patterns:
     - name: keyword.other.class.sk
@@ -33,7 +33,7 @@ repository:
       match: \benum\b
   keywords:
     name: keyword.type.sk
-    match: \b(func|true|false|this|let|requires|throw|fatal|static|return|get|set|if|for|else|in|while|break|match|fixed|extends|implements|with|where|use|alias|namespace|module|operator|constructor|where|default|as|ref|out|value|meta)\b
+    match: \b(alias|as|await|base|break|constructor|default|else|extends|false|fatal|fixed|for|from|func|get|if|implements|import|in|is|let|match|meta|module|operator|out|package|params|ref|requires|return|set|sizeof|this|throw|true|typeof|value|where|while|with)\b
   comment:
     patterns:
     - name: comment.block.sk
