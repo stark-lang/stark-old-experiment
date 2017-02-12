@@ -145,7 +145,7 @@ ImportNameOrAlias: ImportName ('as'ImportName)?;
 // -------------------------------------------------------------------------
 // Type Reference
 // -------------------------------------------------------------------------
-Type: TypeModifier* TypePath ASTERISK?;
+Type: TypeModifier* TypePath;
 
 TypeModifier: Permission
             | Transient;
@@ -156,13 +156,21 @@ TypePath: DelegateDefinition
 TypePart: TypePart DOT IDENTIFIER TypeArguments?
         | TypeFinalPart;
 
-TypeFinalPart: TypeFinalPart OPEN_BRACKET CLOSE_BRACKET
-             | TypeName TypeArguments?;
+TypeFinalPart: TypeSimple (OPEN_BRACKET CLOSE_BRACKET)+
+             | TypeSimple;
+
+TypeSimple: TypeName
+          | TypeName TypeArguments?
+          | TypeSimple ASTERISK
+          ;
 
 TypeName: IDENTIFIER;
 
 TypeArguments: LESS_THAN Type (COMMA Type)* GREATER_THAN;
 
+TypeArgument: Type
+            | Literal 
+            ;
 
 // -------------------------------------------------------------------------
 // Template Parameters
