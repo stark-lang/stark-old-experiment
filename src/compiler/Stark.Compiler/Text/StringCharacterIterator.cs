@@ -3,7 +3,7 @@
 // See license.txt file in the project root for full license information.
 using System.Runtime.CompilerServices;
 
-namespace Stark.Compiler.Parsing
+namespace Stark.Compiler.Text
 {
     public struct StringCharacterIterator : CharacterIterator
     {

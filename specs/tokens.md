@@ -20,7 +20,7 @@ We separate here new lines from whitespaces, as new lines have a special meaning
 See [Appendix: Fragments](#appendix-fragments) for the details about the `Whitespace` fragment.
 
 ```antlr
-SPACES: Whitespace+;
+WHITESPACES: Whitespace+;
 
 NEW_LINE
         : '\r\n' | '\r' | '\n'
@@ -51,6 +51,77 @@ COMMENT_MULTI_LINE: '/*' (COMMENT_MULTI_LINE | .)*? '*/';
 ``` 
 
 > We may introduced another type of comment doc for documenting the parent language element.
+
+## Keywords
+
+A temporary list of keywords or contextual keywords (WIP)
+
+```antlr
+ABSTRACT: 'abstract';
+ALIAS: 'alias';
+AS: 'as';
+ASYNC: 'async';
+AWAIT: 'await';
+BASE: 'base';
+BREAK: 'break';
+CONST: 'const';
+CONSTRUCTOR: 'constructor';
+DEFAULT: 'default';
+ELSE: 'else';
+EXTENDS: 'extends';
+EXTERN: 'extern';
+FALSE: 'false';
+FATAL: 'fatal';
+FIXED: 'fixed';
+FOR: 'for';
+FROM: 'from';
+FUNC: 'func';
+GET: 'get';
+IF: 'if';
+IMMUTABLE: 'immutable';
+IMPLEMENTS: 'implements';
+IMPORT: 'import';
+IN: 'in';
+INTERNAL: 'internal';
+IS: 'is';
+ISOLATED: 'isolated';
+LET: 'let';
+MATCH: 'match';
+META: 'meta';
+MODULE: 'module';
+MUTABLE: 'mutable';
+NEW: 'new';
+OPERATOR: 'operator';
+OUT: 'out';
+OVERRIDE: 'override';
+PACKAGE: 'package';
+PARAMS: 'params';
+PARTIAL: 'partial';
+PRIVATE: 'private';
+PROTECTED: 'protected';
+PUBLIC: 'public';
+READONLY: 'readonly';
+REF: 'ref';
+REQUIRES: 'requires';
+RETURN: 'return';
+SCOPED: 'scoped';
+SEALED: 'sealed';
+SET: 'set';
+SIZEOF: 'sizeof';
+STATIC: 'static';
+THIS: 'this';
+THROW: 'throw';
+TRANSIENT: 'transient';
+TRUE: 'true';
+TYPEOF: 'typeof';
+UNSAFE: 'unsafe';
+VALUE: 'value';
+VIRTUAL: 'virtual';
+VOLATILE: 'volatile';
+WHERE: 'where';
+WHILE: 'while';
+WITH: 'with';
+```
 
 ## Identifiers
 
@@ -215,6 +286,7 @@ CLOSE_BRACE: '}';
 
 TILDE: '~';
 ```
+
 ## Appendix: Fragments
 
 ```antlr

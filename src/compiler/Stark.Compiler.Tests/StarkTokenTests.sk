@@ -162,3 +162,70 @@ With another line
 [
 ]
 
+// Check keywords
+
+ABSTRACT: abstract;
+ALIAS: alias; alias1 alias2
+AS: as;
+ASYNC: async;
+AWAIT: await;
+BASE: base;
+BREAK: break;
+CONST: const;
+CONSTRUCTOR: constructor;
+DEFAULT: default;
+ELSE: else;
+EXTENDS: extends;
+EXTERN: extern;
+FALSE: false;
+FATAL: fatal;
+FIXED: fixed;
+FOR: for; foreach
+FROM: from;
+FUNC: func;
+GET: get;
+IF: if; if_ if1
+IMMUTABLE: immutable;
+IMPLEMENTS: implements;
+IMPORT: import;
+IN: in;
+INTERNAL: internal;
+IS: is;
+ISOLATED: isolated;
+LET: let;
+MATCH: match;
+META: meta;
+MODULE: module;
+MUTABLE: mutable;
+NEW: new;
+OPERATOR: operator;
+OUT: out;
+OVERRIDE: override;
+PACKAGE: package;
+PARAMS: params;
+PARTIAL: partial;
+PRIVATE: private;
+PROTECTED: protected;
+PUBLIC: public;
+READONLY: readonly;
+REF: ref;
+REQUIRES: requires;
+RETURN: return;
+SCOPED: scoped;
+SEALED: sealed;
+SET: set;
+SIZEOF: sizeof;
+STATIC: static;
+THIS: this;
+THROW: throw;
+TRANSIENT: transient;
+TRUE: true;
+TYPEOF: typeof;
+UNSAFE: unsafe;
+VALUE: value;
+VIRTUAL: virtual;
+VOLATILE: volatile;
+WHERE: where;
+WHILE: while;
+WITH: with;
+

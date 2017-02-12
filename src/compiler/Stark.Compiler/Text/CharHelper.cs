@@ -2,10 +2,11 @@
 // Licensed under the MIT license. 
 // See license.txt file in the project root for full license information.
 using System;
+using System.Runtime.CompilerServices;
 
-namespace Stark.Compiler.Parsing
+namespace Stark.Compiler.Text
 {
-    static partial class CharHelper
+    public static partial class CharHelper
     {
         public static readonly Func<char32, bool> IsHexa = IsHexaFunction;
         public static readonly Func<char32, bool> IsOctal = IsOctalFunction;
@@ -67,6 +68,59 @@ namespace Stark.Compiler.Parsing
                    c == '\u202F' || // NARROW NO_BREAK SPACE
                    c == '\u205F' || // MEDIUM MATHEMATICAL SPACE
                    c == '\u3000'; // IDEOGRAPHIC SPACE
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char32? ToUtf8(byte[] buffer, ref int position)
+        {
+            if (position < buffer.Length)
+            {
+                // bytes   bits    UTF-8 representation
+                // -----   ----    -----------------------------------
+                // 1        7      0vvvvvvv
+                // 2       11      110vvvvv 10vvvvvv
+                // 3       16      1110vvvv 10vvvvvv 10vvvvvv
+                // 4       21      11110vvv 10vvvvvv 10vvvvvv 10vvvvvv
+                // -----   ----    -----------------------------------
+
+                //Surrogate:
+                //Real Unicode value = (HighSurrogate - 0xD800) * 0x400 + (LowSurrogate - 0xDC00) + 0x10000
+                var c1 = unchecked((sbyte)buffer[position++]);
+                return c1 >= 0 ? c1 : DecodeUTF8_24(buffer, ref position, c1);
+            }
+            position = buffer.Length;
+            return null;
+        }
+
+        private static char32 DecodeUTF8_24(byte[] buffer, ref int position, sbyte c1)
+        {
+            int nbByte = 0;
+            while (c1 < 0)
+            {
+                c1 = (sbyte)(c1 << 1);
+                nbByte++;
+            }
+
+            if (nbByte > 4 || position + nbByte - 1 > buffer.Length)
+            {
+                // TODO: Throw an exception or return something else?
+                throw new CharReaderException($"Invalid UTF8 character at position {position}");
+            }
+
+            int c = (c1 << (6 - nbByte)) | (buffer[position++] & 0x3f);
+            if (nbByte == 2)
+            {
+                return c;
+            }
+            if (nbByte >= 3)
+            {
+                c = (c << 6) | (buffer[position++] & 0x3f);
+            }
+            if (nbByte == 4)
+            {
+                c = (c << 6) | (buffer[position++] & 0x3f);
+            }
+            return c;
         }
 
         private static bool IsHexaFunction(char32 c)

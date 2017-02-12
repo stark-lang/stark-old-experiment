@@ -44,34 +44,103 @@ parser grammar StarkParser;
 options { tokenVocab=StarkLexer; }
 
 // Language declarations
-Declarations: Declaration*;
+Declarations: Directive*;
 
-Declaration: Modules
-           | OperatorDeclaration
-           | Functions
-           | Types
-           | NEW_LINE+
-           ;
+Directive: ModuleDirective
+         | ExternDirective
+         | ImportDirective
+         | OperatorDeclaration
+         | Functions
+         | Types
+         | NEW_LINE+
+         ;
+
+
 
 // -------------------------------------------------------------------------
 // Module
 // -------------------------------------------------------------------------
 
-Modules: ModuleDeclaration
-       | ModuleDefinition
-       ;
+// Crates.io documentation
+// http://doc.crates.io/specifying-dependencies.html
 
-ModuleDefinition: Visibility? 'module' ModuleFullPath ModuleBody;
+// https://www.reddit.com/r/rust/comments/24n5q2/crates_and_the_module_system/
+// https://docs.racket-lang.org/guide/modules.html
 
-ModuleDeclaration: Visibility? 'module' ModuleFullPath Eod;
 
-ModuleFullPath:  ModulePath? ModuleName;
+// Rust's Modules are Weird (another explanation of Rust's modules and paths)
+// https://www.reddit.com/r/rust/comments/2he9xi/rusts_modules_are_weird_another_explanation_of/
+// https://gist.github.com/DanielKeep/470f4e114d28cd0c8d43
 
-ModulePath: '::'? (ModuleName '::')+;
+// I love rust, but one thing about modules is aweful!
+// https://users.rust-lang.org/t/i-love-rust-but-one-thing-about-modules-is-aweful/2930
+
+
+// The Rust module system is too confusing
+// https://news.ycombinator.com/item?id=13372963
+// https://withoutboats.github.io/blog/rust/2017/01/04/the-rust-module-system-is-too-confusing.html
+
+
+// Notes about Rust modules
+// "I always get a little confused when trying to use its module system"
+// http://blog.thiago.me/notes-about-rust-modules/
+
+
+// Modules in Java 9
+// http://openjdk.java.net/projects/jigsaw/spec/sotms/
+// http://www.javaworld.com/article/2878952/java-platform/modularity-in-java-9.html
+
+
+// Issue: extern crates not working as use
+// https://github.com/rust-lang/rust/issues/26775#issuecomment-156953722
+
+// Check usage in piston: https://github.com/PistonDevelopers/piston
+
+// -------------------------------------------------------------------------
+// Module Directive
+// -------------------------------------------------------------------------
+
+ModuleDirective: Visibility? 'module' ModuleName Eod;
 
 ModuleName: IDENTIFIER;
 
-ModuleBody: OPEN_BRACE Declarations CLOSE_BRACE;
+ModulePath: (ModuleName '::')+
+          | 'this' '::' (ModuleName '::')+
+          | ('base' '::')+ (ModuleName '::')*
+          ;
+
+ModuleFullName: ModulePath ModuleName
+              | ModuleName
+              ;
+
+// -------------------------------------------------------------------------
+// Extern Directive
+// -------------------------------------------------------------------------
+
+// TODO: Add extern to c-library/dllimport
+ExternDirective: ExternPackageDirective
+               ;
+
+ExternPackageDirective: 'extern' 'package' Package ('as' Package) Eod;
+
+// note that this:: or base:: modules are not supported for a Package
+Package: ModuleFullName;
+
+// -------------------------------------------------------------------------
+// Import directive
+// -------------------------------------------------------------------------
+
+ImportDirective: 'public'? 'import' ImportPath Eod;
+
+ImportPath: ModulePath ASTERISK
+          | ModulePath OPEN_BRACE ImportNameOrAlias (',' ImportNameOrAlias)* CLOSE_BRACE
+          | ModulePath? ImportNameOrAlias
+          ;
+
+// The ImportName can either be a module name or a type name
+ImportName: IDENTIFIER;
+ImportNameOrAlias: ImportName ('as'ImportName)?;
+
 
 // -------------------------------------------------------------------------
 // Type Reference
@@ -88,7 +157,9 @@ TypePart: TypePart DOT IDENTIFIER TypeArguments?
         | TypeFinalPart;
 
 TypeFinalPart: TypeFinalPart OPEN_BRACKET CLOSE_BRACKET
-             | IDENTIFIER TypeArguments?;
+             | TypeName TypeArguments?;
+
+TypeName: IDENTIFIER;
 
 TypeArguments: LESS_THAN Type (COMMA Type)* GREATER_THAN;
 

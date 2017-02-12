@@ -1,25 +1,27 @@
 // Copyright (c) The Stark Programming Language Contributors. All rights reserved.
 // Licensed under the MIT license. 
 // See license.txt file in the project root for full license information.
-using System;
 
-namespace Stark.Compiler.Parsing
+using System;
+using Stark.Compiler.Text;
+
+namespace Stark.Compiler.Syntax
 {
     /// <summary>
     /// A lightweight token struct to avoid GC allocations.
     /// </summary>
-    public struct Token : IEquatable<Token>
+    public struct SyntaxToken : IEquatable<SyntaxToken>
     {
-        public static readonly Token Eof = new Token(TokenType.Eof, TextPosition.Eof, TextPosition.Eof);
+        public static readonly SyntaxToken Eof = new SyntaxToken(TokenType.Eof, TextPosition.Eof, TextPosition.Eof);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Token"/> struct.
+        /// Initializes a new instance of the <see cref="SyntaxToken"/> struct.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <exception cref="System.ArgumentOutOfRangeException"></exception>
-        public Token(TokenType type, TextPosition start, TextPosition end)
+        public SyntaxToken(TokenType type, TextPosition start, TextPosition end)
         {
             if (start.Offset > end.Offset) throw new ArgumentOutOfRangeException(nameof(start), $"[{nameof(start)}] index must be <= to [{nameof(end)}]");
             Type = type;
@@ -47,22 +49,26 @@ namespace Stark.Compiler.Parsing
             return $"{Type}({Start}:{End})";
         }
 
+
         public string GetText(string text)
         {
             if (Type == TokenType.Eof)
             {
                 return "<eof>";
             }
-
-            if (Start.Offset < text.Length && End.Offset < text.Length)
-            {
-                return text.Substring(Start.Offset, End.Offset - Start.Offset + 1);
-            }
-
-            return "<error>";
+            return End.Offset < text.Length ? text.Substring(Start.Offset, End.Offset - Start.Offset + 1) : null;
         }
 
-        public bool Equals(Token other)
+        public string GetText<TTextView>(TTextView text) where TTextView : struct, IStringView
+        {
+            if (Type == TokenType.Eof)
+            {
+                return "<eof>";
+            }
+            return text.GetString(Start.Offset, End.Offset - Start.Offset + 1);
+        }
+
+        public bool Equals(SyntaxToken other)
         {
             return Type == other.Type && Start.Equals(other.Start) && End.Equals(other.End);
         }
@@ -70,7 +76,7 @@ namespace Stark.Compiler.Parsing
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is Token && Equals((Token) obj);
+            return obj is SyntaxToken && Equals((SyntaxToken) obj);
         }
 
         public override int GetHashCode()
@@ -84,12 +90,12 @@ namespace Stark.Compiler.Parsing
             }
         }
 
-        public static bool operator ==(Token left, Token right)
+        public static bool operator ==(SyntaxToken left, SyntaxToken right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Token left, Token right)
+        public static bool operator !=(SyntaxToken left, SyntaxToken right)
         {
             return !left.Equals(right);
         }

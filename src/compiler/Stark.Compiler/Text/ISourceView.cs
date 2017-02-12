@@ -1,14 +1,10 @@
 // Copyright (c) The Stark Programming Language Contributors. All rights reserved.
 // Licensed under the MIT license. 
 // See license.txt file in the project root for full license information.
-using System;
-
-namespace Stark.Compiler.Parsing
+namespace Stark.Compiler.Text
 {
-    public sealed class CharReaderException : Exception
+    public interface ISourceView<out TCharIterator> : IStringView<TCharIterator> where TCharIterator : struct, CharacterIterator
     {
-        public CharReaderException(string message) : base(message)
-        {
-        }
+        string SourcePath { get; }
     }
 }

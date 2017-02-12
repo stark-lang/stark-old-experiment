@@ -4,15 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{894B539F-C457-4A89-8856-69F08D93E883}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{2C10C980-9C8A-42B6-AE6D-B9DFDA770B08}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Stark.Compiler</RootNamespace>
-    <AssemblyName>Stark.Compiler</AssemblyName>
+    <RootNamespace>KeywordMatchGenApp</RootNamespace>
+    <AssemblyName>KeywordMatchGenApp</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,32 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Text\char32.cs" />
-    <Compile Include="Text\CharHelper.CharacterRanges.cs" />
-    <Compile Include="Text\CharHelper.cs" />
-    <Compile Include="Text\CharReaderException.cs" />
-    <Compile Include="Text\CharacterIterator.cs" />
-    <Compile Include="Collections\Iterator.cs" />
-    <Compile Include="Parsing\KeywordMatcher.cs" />
-    <Compile Include="Text\ISourceView.cs" />
-    <Compile Include="Text\IStringView.cs" />
-    <Compile Include="Text\StringCharacterUtf8Iterator.cs" />
-    <Compile Include="Text\StringSourceView.cs" />
-    <Compile Include="Text\StringUtf8SourceView.cs" />
-    <Compile Include="Text\TextMatcher.cs" />
-    <Compile Include="Parsing\Lexer.cs" />
-    <Compile Include="Parsing\LogMessage.cs" />
-    <Compile Include="Text\SourceSpan.cs" />
-    <Compile Include="Text\StringCharacterIterator.cs" />
-    <Compile Include="Syntax\SyntaxToken.cs" />
-    <Compile Include="Syntax\TokenTextAttribute.cs" />
-    <Compile Include="Syntax\TokenType.cs" />
-    <Compile Include="Syntax\TokenTypeExtensions.cs" />
+    <Compile Include="..\..\compiler\Stark.Compiler\Text\TextMatcher.cs">
+      <Link>TextMatcher.cs</Link>
+    </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Text\TextPosition.cs" />
-    <Compile Include="Syntax\SyntaxNode.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

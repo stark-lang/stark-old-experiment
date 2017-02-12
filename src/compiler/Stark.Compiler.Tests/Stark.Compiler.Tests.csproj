@@ -184,8 +184,10 @@
     <Compile Include="BenchmarkTokenizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestCharHelper.cs" />
+    <Compile Include="TestMatcher.cs" />
     <Compile Include="TextAssert.cs" />
-    <Compile Include="TestTokenizer.cs" />
+    <Compile Include="TestLexer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Antlr4 Include="..\..\grammar\StarkLexer.g4">

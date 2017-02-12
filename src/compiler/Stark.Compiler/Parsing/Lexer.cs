@@ -6,15 +6,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Stark.Compiler.Syntax;
+using Stark.Compiler.Text;
 
 namespace Stark.Compiler.Parsing
 {
     /// <summary>
-    /// Tokenizer enumerator that generates <see cref="Token"/>, to be used from a foreach.
+    /// Lexer enumerator that generates <see cref="SyntaxToken"/>, to be used from a foreach.
     /// </summary>
-    public class Tokenizer<TReader> : IEnumerable<Token> where TReader : struct, CharacterIterator
+    public class Lexer<TSourceView, TCharReader> : IEnumerable<SyntaxToken> where TSourceView : struct, ISourceView<TCharReader> where TCharReader : struct, CharacterIterator
     {
-        private Token _token;
+        private SyntaxToken _token;
         private TextPosition _position;
         private TextPosition _nextPosition;
         private char32 _c;
@@ -23,29 +26,26 @@ namespace Stark.Compiler.Parsing
         private char32? _peekC;
         private List<LogMessage> _errors;
         private int _nestedMultilineCommentCount;
-        private TReader _reader;
+        private TCharReader _reader;
         private const int Eof = -1;
 
         /// <summary>
-        /// Initialize a new instance of this <see cref="Tokenizer{TReader}" />.
+        /// Initialize a new instance of this <see cref="Lexer{TSourceView,TCharReader}" />.
         /// </summary>
         /// <param name="textReader">The text to analyze</param>
         /// <param name="sourcePath">The file path used for error reporting only.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentNullException">If text is null</exception>
-        public Tokenizer(TReader textReader, string sourcePath = null)
+        public Lexer(TSourceView sourceView, string sourcePath = null)
         {
-            _reader = textReader;
-            SourceFilePath = sourcePath ?? "<input>";
+            Source = sourceView;
+            _reader = sourceView.GetIterator();
         }
 
-        /// <summary>
-        /// The file path of the text (used for reporting errors)
-        /// </summary>
-        public string SourceFilePath { get; }
+        public TSourceView Source;
 
         /// <summary>
-        /// Gets a boolean indicating whether this tokenizer has errors.
+        /// Gets a boolean indicating whether this lexer has errors.
         /// </summary>
         public bool HasErrors => _errors != null && _errors.Count > 0;
 
@@ -84,11 +84,11 @@ namespace Stark.Compiler.Parsing
                 case '\u2028': // line separator
                 case '\u2029': // paragraph separator
                 case '\n':
-                    _token = new Token(TokenType.NewLine, start, _position);
+                    _token = new SyntaxToken(TokenType.NewLine, start, _position);
                     NextChar();
                     break;
                 case ';':
-                    _token = new Token(TokenType.SemiColon, start, _position);
+                    _token = new SyntaxToken(TokenType.SemiColon, start, _position);
                     NextChar();
                     break;
                 case '\r':
@@ -96,35 +96,35 @@ namespace Stark.Compiler.Parsing
                     // case of: \r\n
                     if (_c == '\n')
                     {
-                        _token = new Token(TokenType.NewLine, start, _position);
+                        _token = new SyntaxToken(TokenType.NewLine, start, _position);
                         NextChar();
                         break;
                     }
                     // case of \r
-                    _token = new Token(TokenType.NewLine, start, start);
+                    _token = new SyntaxToken(TokenType.NewLine, start, start);
                     break;
                 case ':':
                     NextChar();
-                    _token = new Token(TokenType.Colon, start, start);
+                    _token = new SyntaxToken(TokenType.Colon, start, start);
                     break;
                 case '$':
-                    _token = new Token(TokenType.Dollar, start, start);
+                    _token = new SyntaxToken(TokenType.Dollar, start, start);
                     NextChar();
                     break;
                 case '#':
-                    _token = new Token(TokenType.Number, start, start);
+                    _token = new SyntaxToken(TokenType.Number, start, start);
                     NextChar();
                     break;
                 case '~':
-                    _token = new Token(TokenType.Tilde, start, start);
+                    _token = new SyntaxToken(TokenType.Tilde, start, start);
                     NextChar();
                     break;
                 case '`':
-                    _token = new Token(TokenType.GraveAccent, start, start);
+                    _token = new SyntaxToken(TokenType.GraveAccent, start, start);
                     NextChar();
                     break;
                 case '\\':
-                    _token = new Token(TokenType.Backslash, start, start);
+                    _token = new SyntaxToken(TokenType.Backslash, start, start);
                     NextChar();
                     break;
                 case '@':
@@ -134,15 +134,15 @@ namespace Stark.Compiler.Parsing
                         ReadString(start, true);
                         break;
                     }
-                    _token = new Token(TokenType.At, start, start);
+                    _token = new SyntaxToken(TokenType.At, start, start);
                     break;
                 case '^':
                     NextChar();
-                    _token = new Token(TokenType.Caret, start, start);
+                    _token = new SyntaxToken(TokenType.Caret, start, start);
                     break;
                 case '*':
                     NextChar();
-                    _token = new Token(TokenType.Asterisk, start, start);
+                    _token = new SyntaxToken(TokenType.Asterisk, start, start);
                     break;
                 case '/':
                     NextChar();
@@ -151,80 +151,80 @@ namespace Stark.Compiler.Parsing
                         ReadComment(start);
                         break;
                     }
-                    _token = new Token(TokenType.Slash, start, start);
+                    _token = new SyntaxToken(TokenType.Slash, start, start);
                     break;
                 case '+':
                     NextChar();
-                    _token = new Token(TokenType.Plus, start, start);
+                    _token = new SyntaxToken(TokenType.Plus, start, start);
                     break;
                 case '-':
                     NextChar();
-                    _token = new Token(TokenType.Minus, start, start);
+                    _token = new SyntaxToken(TokenType.Minus, start, start);
                     break;
                 case '%':
                     NextChar();
-                    _token = new Token(TokenType.Percent, start, start);
+                    _token = new SyntaxToken(TokenType.Percent, start, start);
                     break;
                 case ',':
-                    _token = new Token(TokenType.Comma, start, start);
+                    _token = new SyntaxToken(TokenType.Comma, start, start);
                     NextChar();
                     break;
                 case '&':
                     NextChar();
-                    _token = new Token(TokenType.Ampersand, start, start);
+                    _token = new SyntaxToken(TokenType.Ampersand, start, start);
                     break;
                 case '?':
                     NextChar();
-                    _token = new Token(TokenType.Question, start, start);
+                    _token = new SyntaxToken(TokenType.Question, start, start);
                     break;
                 case '|':
                     NextChar();
-                    _token = new Token(TokenType.Pipe, start, start);
+                    _token = new SyntaxToken(TokenType.Pipe, start, start);
                     break;
                 case '.':
                     NextChar();
-                    _token = new Token(TokenType.Dot, start, start);
+                    _token = new SyntaxToken(TokenType.Dot, start, start);
                     break;
 
                 case '!':
                     NextChar();
-                    _token = new Token(TokenType.Exclamation, start, start);
+                    _token = new SyntaxToken(TokenType.Exclamation, start, start);
                     break;
 
                 case '=':
                     NextChar();
-                    _token = new Token(TokenType.Equal, start, start);
+                    _token = new SyntaxToken(TokenType.Equal, start, start);
                     break;
                 case '<':
                     NextChar();
-                    _token = new Token(TokenType.LessThan, start, start);
+                    _token = new SyntaxToken(TokenType.LessThan, start, start);
                     break;
                 case '>':
                     NextChar();
-                    _token = new Token(TokenType.GreaterThan, start, start);
+                    _token = new SyntaxToken(TokenType.GreaterThan, start, start);
                     break;
                 case '(':
-                    _token = new Token(TokenType.OpenParenthesis, _position, _position);
+                    _token = new SyntaxToken(TokenType.OpenParenthesis, _position, _position);
                     NextChar();
                     break;
                 case ')':
-                    _token = new Token(TokenType.CloseParenthesis, _position, _position);
+                    _token = new SyntaxToken(TokenType.CloseParenthesis, _position, _position);
                     NextChar();
                     break;
                 case '[':
-                    _token = new Token(TokenType.OpenBracket, _position, _position);
+                    _token = new SyntaxToken(TokenType.OpenBracket, _position, _position);
                     NextChar();
                     break;
                 case ']':
-                    _token = new Token(TokenType.CloseBracket, _position, _position);
+                    _token = new SyntaxToken(TokenType.CloseBracket, _position, _position);
                     NextChar();
                     break;
                 case '{':
-                    _token = new Token(TokenType.OpenBrace, _position, _position);
+                    _token = new SyntaxToken(TokenType.OpenBrace, _position, _position);
                     NextChar();
                     break;
                 case '}':
-                    _token = new Token(TokenType.CloseBrace, _position, _position);
+                    _token = new SyntaxToken(TokenType.CloseBrace, _position, _position);
                     NextChar();
                     break;
                 case '"':
@@ -234,7 +234,7 @@ namespace Stark.Compiler.Parsing
                     ReadChar();
                     break;
                 case Eof:
-                    _token = Token.Eof;
+                    _token = SyntaxToken.Eof;
                     break;
                 default:
                     // Eat any whitespace
@@ -256,7 +256,7 @@ namespace Stark.Compiler.Parsing
                     }
 
                     // invalid char
-                    _token = new Token(TokenType.Invalid, _position, _position);
+                    _token = new SyntaxToken(TokenType.Invalid, _position, _position);
                     NextChar();
                     break;
             }
@@ -274,7 +274,7 @@ namespace Stark.Compiler.Parsing
 
             if (start != _position)
             {
-                _token = new Token(TokenType.Spaces, start, end);
+                _token = new SyntaxToken(TokenType.Whitespaces, start, end);
                 return true;
             }
 
@@ -284,6 +284,11 @@ namespace Stark.Compiler.Parsing
         private void ReadIdentifier()
         {
             var start = _position;
+
+            // Prepare keyword matching
+            TokenType? tokenType = null;
+            int keywordIndex = 0;
+            KeywordMatcher.TryMatch(ref keywordIndex, _c, out tokenType);
 
             var starsWithUnderscore = '_' == _c;
             TextPosition beforePosition;
@@ -295,10 +300,18 @@ namespace Stark.Compiler.Parsing
 
                 if (_c == '_')
                 {
+                    // If we have a single _, we can invalidate keyword search as we don't expect any
+                    tokenType = null;
+                    keywordIndex = -1;
                     continue;
                 }
                 if (CharHelper.IsIdentifierContinue(_c))
                 {
+                    // Try to continue matching keyword for next char
+                    if (keywordIndex >= 0)
+                    {
+                        KeywordMatcher.TryMatch(ref keywordIndex, _c, out tokenType);
+                    }
                     hasLetters = true;
                 }
                 else
@@ -307,7 +320,7 @@ namespace Stark.Compiler.Parsing
                 }
             } 
 
-            _token = new Token(starsWithUnderscore && !hasLetters ? TokenType.Underscores : TokenType.Identifier, start, beforePosition);
+            _token = new SyntaxToken(starsWithUnderscore && !hasLetters ? TokenType.Underscores : tokenType ?? TokenType.Identifier, start, beforePosition);
         }
 
         private void ReadNumber()
@@ -379,11 +392,11 @@ namespace Stark.Compiler.Parsing
                     if (!hasCharInRange)
                     {
                         AddError($"Invalid {name} integer. Expecting at least one {range} after {prefix}", start, start);
-                        _token = new Token(TokenType.Invalid, start, end);
+                        _token = new SyntaxToken(TokenType.Invalid, start, end);
                     }
                     else
                     {
-                        _token = new Token(tokenType, start, end);
+                        _token = new SyntaxToken(tokenType, start, end);
                     }
                     return;
                 }
@@ -410,7 +423,7 @@ namespace Stark.Compiler.Parsing
                     if (!CharHelper.IsDigit(_c))
                     {
                         AddError("Expecting at least one digit after the float dot .", _position, _position);
-                        _token = new Token(TokenType.Invalid, start, end);
+                        _token = new SyntaxToken(TokenType.Invalid, start, end);
                         return;
                     }
 
@@ -444,7 +457,7 @@ namespace Stark.Compiler.Parsing
                 if (!CharHelper.IsDigit(_c))
                 {
                     AddError("Expecting at least one digit after the exponent", _position, _position);
-                    _token = new Token(TokenType.Invalid, start, end);
+                    _token = new SyntaxToken(TokenType.Invalid, start, end);
                     return;
                 }
 
@@ -455,7 +468,7 @@ namespace Stark.Compiler.Parsing
                 }
             }
 
-            _token = new Token(isFloat ? TokenType.Float : TokenType.Integer, start, end);
+            _token = new SyntaxToken(isFloat ? TokenType.Float : TokenType.Integer, start, end);
         }
 
         private void ReadChar()
@@ -470,13 +483,13 @@ namespace Stark.Compiler.Parsing
                 {
                     end = _position;
                     NextChar();
-                    _token = new Token(TokenType.Char, start, end);
+                    _token = new SyntaxToken(TokenType.Char, start, end);
                     return;
                 }
                 AddError($"Unexpected end of file while parsing a character not terminated by a {startChar}", end, end);
             }
 
-            _token = new Token(TokenType.Invalid, start, end);
+            _token = new SyntaxToken(TokenType.Invalid, start, end);
         }
 
         private void ReadString(TextPosition start, bool isRawString)
@@ -507,12 +520,12 @@ namespace Stark.Compiler.Parsing
                 }
                 else
                 {
-                    _token = new Token(TokenType.Invalid, start, end);
+                    _token = new SyntaxToken(TokenType.Invalid, start, end);
                     return;
                 }
             }
 
-            _token = new Token(isRawString ? TokenType.StringRaw : TokenType.String, start, end);
+            _token = new SyntaxToken(isRawString ? TokenType.StringRaw : TokenType.String, start, end);
         }
 
         private bool ReadChar(ref TextPosition end, char32 startChar, bool isRawString)
@@ -624,7 +637,7 @@ namespace Stark.Compiler.Parsing
                     NextChar();
                 }
 
-                _token = new Token(isDocComment ? TokenType.CommentDoc : TokenType.Comment, start, end);
+                _token = new SyntaxToken(isDocComment ? TokenType.CommentDoc : TokenType.Comment, start, end);
             }
             else
             {
@@ -654,7 +667,7 @@ namespace Stark.Compiler.Parsing
                             {
                                 end = _position;
                                 NextChar(); // skip last /
-                                _token = new Token(TokenType.CommentMultiLine, start, end);
+                                _token = new SyntaxToken(TokenType.CommentMultiLine, start, end);
                                 return;
                             }
                             NextChar();
@@ -667,7 +680,7 @@ namespace Stark.Compiler.Parsing
                 }
 
                 AddError("Invalid multi-line comment. No matching */ for start /*", start, start);
-                _token = new Token(TokenType.Invalid, start, end);
+                _token = new SyntaxToken(TokenType.Invalid, start, end);
             }
         }
 
@@ -700,6 +713,7 @@ namespace Stark.Compiler.Parsing
             return _peekC.Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void NextChar()
         {
             // If we have any pending peek position, use it
@@ -724,8 +738,8 @@ namespace Stark.Compiler.Parsing
 
         private char32 NextCharFromReader()
         {
-            try
-            {
+            //try
+            //{
                 int position = _position.Offset;
                 var nextChar = _reader.TryGetNext(ref position);
                 _nextPosition.Offset = position;
@@ -746,15 +760,15 @@ namespace Stark.Compiler.Parsing
                 }
 
                 return Eof;
-            }
-            catch (CharReaderException ex)
-            {
-                AddError(ex.Message, _position, _position);
-            }
-            return 0;
+            //}
+            //catch (CharReaderException ex)
+            //{
+            //    AddError(ex.Message, _position, _position);
+            //}
+            //return 0;
         }
 
-        IEnumerator<Token> IEnumerable<Token>.GetEnumerator()
+        IEnumerator<SyntaxToken> IEnumerable<SyntaxToken>.GetEnumerator()
         {
             return GetEnumerator();
         }
@@ -770,7 +784,7 @@ namespace Stark.Compiler.Parsing
             {
                 _errors = new List<LogMessage>();
             }
-            _errors.Add(new LogMessage(ParserMessageType.Error, new SourceSpan(SourceFilePath, start, end), message));
+            _errors.Add(new LogMessage(ParserMessageType.Error, new SourceSpan(Source.SourcePath, start, end), message));
         }
 
         private void Reset()
@@ -780,7 +794,7 @@ namespace Stark.Compiler.Parsing
             _position = new TextPosition();
             _c = NextCharFromReader();
 
-            _token = new Token();
+            _token = new SyntaxToken();
             _peekNextPosition = null;
             _peekPosition = null;
             _peekC = null;
@@ -789,29 +803,29 @@ namespace Stark.Compiler.Parsing
         }
 
         /// <summary>
-        /// Custom enumerator on <see cref="Token"/>
+        /// Custom enumerator on <see cref="SyntaxToken"/>
         /// </summary>
-        public struct Enumerator : IEnumerator<Token>
+        public struct Enumerator : IEnumerator<SyntaxToken>
         {
-            private readonly Tokenizer<TReader> _tokenizer;
+            private readonly Lexer<TSourceView, TCharReader> _lexer;
 
-            public Enumerator(Tokenizer<TReader> tokenizer)
+            public Enumerator(Lexer<TSourceView, TCharReader> lexer)
             {
-                _tokenizer = tokenizer;
-                tokenizer.Reset();
+                _lexer = lexer;
+                lexer.Reset();
             }
 
             public bool MoveNext()
             {
-                return _tokenizer.MoveNext();
+                return _lexer.MoveNext();
             }
 
             public void Reset()
             {
-                _tokenizer.Reset();
+                _lexer.Reset();
             }
 
-            public Token Current => _tokenizer._token;
+            public SyntaxToken Current => _lexer._token;
 
             object IEnumerator.Current => Current;
 

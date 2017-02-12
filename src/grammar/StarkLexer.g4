@@ -17,7 +17,7 @@ import XID_Start_Continue; // import the definition of XID_Start
 // We separate here new lines from whitespaces, as new lines have a special meaning in Stark, to enable ending a statement/declaration automatically.
 // See [Appendix: Fragments](#appendix-fragments) for the details about the `Whitespace` fragment.
 
-SPACES: Whitespace+;
+WHITESPACES: Whitespace+;
 
 NEW_LINE
         : '\r\n' | '\r' | '\n'
@@ -40,6 +40,74 @@ COMMENT_DOC:        '///' ~[\r\n]*;
 COMMENT_MULTI_LINE: '/*' (COMMENT_MULTI_LINE | .)*? '*/';
 
 // > We may introduced another type of comment doc for documenting the parent language element.
+// ## Keywords
+// A temporary list of keywords or contextual keywords (WIP)
+
+ABSTRACT: 'abstract';
+ALIAS: 'alias';
+AS: 'as';
+ASYNC: 'async';
+AWAIT: 'await';
+BASE: 'base';
+BREAK: 'break';
+CONST: 'const';
+CONSTRUCTOR: 'constructor';
+DEFAULT: 'default';
+ELSE: 'else';
+EXTENDS: 'extends';
+EXTERN: 'extern';
+FALSE: 'false';
+FATAL: 'fatal';
+FIXED: 'fixed';
+FOR: 'for';
+FROM: 'from';
+FUNC: 'func';
+GET: 'get';
+IF: 'if';
+IMMUTABLE: 'immutable';
+IMPLEMENTS: 'implements';
+IMPORT: 'import';
+IN: 'in';
+INTERNAL: 'internal';
+IS: 'is';
+ISOLATED: 'isolated';
+LET: 'let';
+MATCH: 'match';
+META: 'meta';
+MODULE: 'module';
+MUTABLE: 'mutable';
+NEW: 'new';
+OPERATOR: 'operator';
+OUT: 'out';
+OVERRIDE: 'override';
+PACKAGE: 'package';
+PARAMS: 'params';
+PARTIAL: 'partial';
+PRIVATE: 'private';
+PROTECTED: 'protected';
+PUBLIC: 'public';
+READONLY: 'readonly';
+REF: 'ref';
+REQUIRES: 'requires';
+RETURN: 'return';
+SCOPED: 'scoped';
+SEALED: 'sealed';
+SET: 'set';
+SIZEOF: 'sizeof';
+STATIC: 'static';
+THIS: 'this';
+THROW: 'throw';
+TRANSIENT: 'transient';
+TRUE: 'true';
+TYPEOF: 'typeof';
+UNSAFE: 'unsafe';
+VALUE: 'value';
+VIRTUAL: 'virtual';
+VOLATILE: 'volatile';
+WHERE: 'where';
+WHILE: 'while';
+WITH: 'with';
+
 // ## Identifiers
 // An identifier is defined by using the ["Unicode Identifier and Pattern Syntax" (Unicode® Standard Annex #31)](http://www.unicode.org/reports/tr31/)
 // It is composed of characters `XID_Start` and `XID_Continue` that can be extracted from the [Unicode DerivedCoreProperties database](http://unicode.org/Public/UNIDATA/DerivedCoreProperties.txt).

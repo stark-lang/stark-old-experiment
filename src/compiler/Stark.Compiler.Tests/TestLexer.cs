@@ -9,21 +9,23 @@ using System.Text;
 using Antlr4.Runtime;
 using NUnit.Framework;
 using Stark.Compiler.Parsing;
+using Stark.Compiler.Syntax;
+using Stark.Compiler.Text;
 
 namespace Stark.Compiler.Tests
 {
     /// <summary>
-    /// Tests for the <see cref="Tokenizer{TReader}"/>.
+    /// Tests for the <see cref="Lexer{TSourceView,TCharReader}"/>.
     /// </summary>
     [TestFixture]
-    public class TestTokenizer
+    public class TestLexer
     {
         [Test]
         public void ParseEmpty()
         {
             var tokens = ParseTokens("");
             Assert.AreEqual(1, tokens.Count);
-            Assert.AreEqual(Token.Eof, tokens[0]);
+            Assert.AreEqual(SyntaxToken.Eof, tokens[0]);
         }
 
         [Test]
@@ -66,14 +68,14 @@ namespace Stark.Compiler.Tests
                 {"\u0085", TokenType.NewLine},
                 {"\u2028", TokenType.NewLine},
                 {"\u2029", TokenType.NewLine},
-                {" ", TokenType.Spaces},
-                {"\t", TokenType.Spaces},
-                {"\u00A0", TokenType.Spaces},
-                {"\u2000", TokenType.Spaces},
-                {"\u2006", TokenType.Spaces},
-                {"\u200A", TokenType.Spaces},
-                {"\u3000", TokenType.Spaces},
-                {" \t", TokenType.Spaces},
+                {" ", TokenType.Whitespaces},
+                {"\t", TokenType.Whitespaces},
+                {"\u00A0", TokenType.Whitespaces},
+                {"\u2000", TokenType.Whitespaces},
+                {"\u2006", TokenType.Whitespaces},
+                {"\u200A", TokenType.Whitespaces},
+                {"\u3000", TokenType.Whitespaces},
+                {" \t", TokenType.Whitespaces},
                 {"\b", TokenType.Invalid},
             });
         }
@@ -97,6 +99,29 @@ namespace Stark.Compiler.Tests
                 {"_áê", TokenType.Identifier},
                 {"\U0001EE29\U0001EE2A\U0001EE2B\U0001EE2Cz", TokenType.Identifier},
             });
+        }
+
+        [Test]
+        public void ParseKeywords()
+        {
+            var keywords = new Dictionary<string, TokenType>();
+            var enumValues = Enum.GetValues(typeof(TokenType));
+            foreach (TokenType enumValue in enumValues)
+            {
+                if (enumValue <= TokenType.Identifier)
+                {
+                    continue;
+                }
+
+                Assert.True(enumValue.HasText());
+
+                var keyword = enumValue.ToText();
+                keywords.Add(keyword, enumValue);
+            }
+
+            Assert.True(keywords.Count > 10); // just test that we have many keywords
+
+            VerifySimpleTokens(keywords);
         }
 
         [Test]
@@ -142,9 +167,9 @@ namespace Stark.Compiler.Tests
         {
             var list = ParseTokens("0a", false);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
 
         [Test]
@@ -152,10 +177,10 @@ namespace Stark.Compiler.Tests
         {
             var list = ParseTokens("1..");
             Assert.AreEqual(4, list.Count);
-            Assert.AreEqual(new Token(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Dot, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
-            Assert.AreEqual(new Token(TokenType.Dot, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[2]);
-            Assert.AreEqual(Token.Eof, list[3]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Dot, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Dot, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[2]);
+            Assert.AreEqual(SyntaxToken.Eof, list[3]);
         }
 
         [Test]
@@ -164,9 +189,9 @@ namespace Stark.Compiler.Tests
             // Expect numbers after exponent
             var list = ParseTokens("0xz", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
 
         [Test]
@@ -175,9 +200,9 @@ namespace Stark.Compiler.Tests
             // Expect numbers after exponent
             var list = ParseTokens("1ex", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
 
         [Test]
@@ -186,9 +211,9 @@ namespace Stark.Compiler.Tests
             // Expect numbers after exponent
             var list = ParseTokens("1e+x", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
         
         [Test]
@@ -197,16 +222,16 @@ namespace Stark.Compiler.Tests
             // Expect digits after dot .
             var list = ParseTokens("1.a", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
 
         [Test]
         public void ParseCommentSingleLine()
         {
             var comment = "// This is a comment";
-            VerifyCodeBlock(comment, new Token(TokenType.Comment, new TextPosition(0, 0, 0), new TextPosition(comment.Length - 1, 0, comment.Length - 1)) );
+            VerifyCodeBlock(comment, new SyntaxToken(TokenType.Comment, new TextPosition(0, 0, 0), new TextPosition(comment.Length - 1, 0, comment.Length - 1)) );
         }
 
         [Test]
@@ -214,12 +239,12 @@ namespace Stark.Compiler.Tests
         {
             {
                 var comment = @"/* This a multi-line comment on a single line */";
-                VerifyCodeBlock(comment, new Token(TokenType.CommentMultiLine, new TextPosition(0, 0, 0), new TextPosition(comment.Length - 1, 0, comment.Length - 1)));
+                VerifyCodeBlock(comment, new SyntaxToken(TokenType.CommentMultiLine, new TextPosition(0, 0, 0), new TextPosition(comment.Length - 1, 0, comment.Length - 1)));
             }
 
             {
                 var comment = @"/* This a multi-line comment on a single line without a ending";
-                VerifyCodeBlockWithErrors(comment, new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(comment.Length - 1, 0, comment.Length - 1)));
+                VerifyCodeBlockWithErrors(comment, new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(comment.Length - 1, 0, comment.Length - 1)));
             }
         }
 
@@ -230,7 +255,7 @@ namespace Stark.Compiler.Tests
 comment on a 
 multi-line 
 */";
-            VerifyCodeBlock(text, new Token(TokenType.CommentMultiLine, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 3, 1)));
+            VerifyCodeBlock(text, new SyntaxToken(TokenType.CommentMultiLine, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 3, 1)));
         }
 
 
@@ -241,7 +266,7 @@ multi-line
 comment nested on a */
 multi-line 
 */";
-            VerifyCodeBlock(text, new Token(TokenType.CommentMultiLine, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 3, 1)));
+            VerifyCodeBlock(text, new SyntaxToken(TokenType.CommentMultiLine, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 3, 1)));
         }
 
         [Test]
@@ -292,8 +317,8 @@ multi-line
         {
             var list = ParseTokens("'", true);
             Assert.AreEqual(2, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
-            Assert.AreEqual(Token.Eof, list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
+            Assert.AreEqual(SyntaxToken.Eof, list[1]);
         }
 
         [Test]
@@ -301,8 +326,8 @@ multi-line
         {
             var list = ParseTokens("'a", true);
             Assert.AreEqual(2, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(Token.Eof, list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(SyntaxToken.Eof, list[1]);
         }
 
         [Test]
@@ -310,10 +335,10 @@ multi-line
         {
             var list = ParseTokens("'ab'", true);
             Assert.AreEqual(4, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[2]);
-            Assert.AreEqual(Token.Eof, list[3]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[2]);
+            Assert.AreEqual(SyntaxToken.Eof, list[3]);
         }
 
         [Test]
@@ -321,27 +346,27 @@ multi-line
         {
             var list = ParseTokens("'\\u'", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
 
             list = ParseTokens("'\\u0'", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(3, 0, 3)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(4, 0, 4), new TextPosition(4, 0, 4)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(3, 0, 3)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(4, 0, 4), new TextPosition(4, 0, 4)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
 
             list = ParseTokens("'\\u00'", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(4, 0, 4)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(5, 0, 5), new TextPosition(5, 0, 5)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(4, 0, 4)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(5, 0, 5), new TextPosition(5, 0, 5)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
 
             list = ParseTokens("'\\u000'", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(5, 0, 5)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(6, 0, 6), new TextPosition(6, 0, 6)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(5, 0, 5)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(6, 0, 6), new TextPosition(6, 0, 6)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
 
         [Test]
@@ -349,9 +374,9 @@ multi-line
         {
             var list = ParseTokens("'\\x'", true);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
-            Assert.AreEqual(Token.Eof, list[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(2, 0, 2)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[1]);
+            Assert.AreEqual(SyntaxToken.Eof, list[2]);
         }
 
         [Test]
@@ -359,10 +384,10 @@ multi-line
         {
             var list = ParseTokens("'\\z'", true);
             Assert.AreEqual(4, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[2]);
-            Assert.AreEqual(Token.Eof, list[3]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[2]);
+            Assert.AreEqual(SyntaxToken.Eof, list[3]);
         }
 
         [Test]
@@ -370,10 +395,10 @@ multi-line
         {
             var list = ParseTokens("\"\\z\"", true);
             Assert.AreEqual(4, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[2]);
-            Assert.AreEqual(Token.Eof, list[3]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(2, 0, 2)), list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(3, 0, 3), new TextPosition(3, 0, 3)), list[2]);
+            Assert.AreEqual(SyntaxToken.Eof, list[3]);
         }
 
         [Test]
@@ -381,10 +406,10 @@ multi-line
         {
             var list = ParseTokens("\"\n\"", true);
             Assert.AreEqual(4, list.Count);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
-            Assert.AreEqual(new Token(TokenType.NewLine, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
-            Assert.AreEqual(new Token(TokenType.Invalid, new TextPosition(2, 1, 0), new TextPosition(2, 1, 0)), list[2]);
-            Assert.AreEqual(Token.Eof, list[3]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)), list[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.NewLine, new TextPosition(1, 0, 1), new TextPosition(1, 0, 1)), list[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Invalid, new TextPosition(2, 1, 0), new TextPosition(2, 1, 0)), list[2]);
+            Assert.AreEqual(SyntaxToken.Eof, list[3]);
         }
 
         [Test]
@@ -393,7 +418,7 @@ multi-line
             var text = @"@""This a string on """"
 a single line
 """;
-            VerifyCodeBlock(text, new Token(TokenType.StringRaw, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 2, 0)));
+            VerifyCodeBlock(text, new SyntaxToken(TokenType.StringRaw, new TextPosition(0, 0, 0), new TextPosition(text.Length - 1, 2, 0)));
         }
 
         [Test]
@@ -401,22 +426,22 @@ a single line
         {
             //           0123456 7
             var text = "10ab /\n{";
-            var lexer = new Tokenizer<StringCharacterIterator>(new StringCharacterIterator(text));
+            var lexer = new Lexer<StringSourceView, StringCharacterIterator>(new StringSourceView(text, "<input>"));
             Assert.False((bool)lexer.HasErrors);
-            var tokens = lexer.ToList<Token>();
+            var tokens = lexer.ToList<SyntaxToken>();
             Assert.AreEqual(7, tokens.Count);
-            Assert.AreEqual(new Token(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), tokens[0]);
-            Assert.AreEqual(new Token(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(3, 0, 3)), tokens[1]);
-            Assert.AreEqual(new Token(TokenType.Spaces, new TextPosition(4, 0, 4), new TextPosition(4, 0, 4)), tokens[2]);
-            Assert.AreEqual(new Token(TokenType.Slash, new TextPosition(5, 0, 5), new TextPosition(5, 0, 5)), tokens[3]);
-            Assert.AreEqual(new Token(TokenType.NewLine, new TextPosition(6, 0, 6), new TextPosition(6, 0, 6)), tokens[4]);
-            Assert.AreEqual(new Token(TokenType.OpenBrace, new TextPosition(7, 1, 0), new TextPosition(7, 1, 0)), tokens[5]);
-            Assert.AreEqual(new Token(TokenType.Eof, TextPosition.Eof, TextPosition.Eof), tokens[6]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Integer, new TextPosition(0, 0, 0), new TextPosition(1, 0, 1)), tokens[0]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Identifier, new TextPosition(2, 0, 2), new TextPosition(3, 0, 3)), tokens[1]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Whitespaces, new TextPosition(4, 0, 4), new TextPosition(4, 0, 4)), tokens[2]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Slash, new TextPosition(5, 0, 5), new TextPosition(5, 0, 5)), tokens[3]);
+            Assert.AreEqual(new SyntaxToken(TokenType.NewLine, new TextPosition(6, 0, 6), new TextPosition(6, 0, 6)), tokens[4]);
+            Assert.AreEqual(new SyntaxToken(TokenType.OpenBrace, new TextPosition(7, 1, 0), new TextPosition(7, 1, 0)), tokens[5]);
+            Assert.AreEqual(new SyntaxToken(TokenType.Eof, TextPosition.Eof, TextPosition.Eof), tokens[6]);
         }
 
         public static string LoadTestTokens()
         {
-            var inputFilePath = Path.Combine(Path.GetDirectoryName(typeof(TestTokenizer).Assembly.Location),
+            var inputFilePath = Path.Combine(Path.GetDirectoryName(typeof(TestLexer).Assembly.Location),
                 "StarkTokenTests.sk");
             return File.ReadAllText(inputFilePath);
         }
@@ -446,24 +471,8 @@ a single line
             var antlrOutput = builder.ToString();
 
             // Build Stark Output
-            var tokens = ParseTokens(inputString);
-            tokens.RemoveAt(tokens.Count - 1);
-            builder.Clear();
-            foreach (var token in tokens)
-            {
-                var tokenTypeName = token.Type.ToString();
-                for (int i = 0; i < tokenTypeName.Length; i++)
-                {
-                    var c = tokenTypeName[i];
-                    if (i > 0 && char.IsUpper(c))
-                    {
-                        builder.Append('_');
-                    }
-                    builder.Append(char.ToUpperInvariant(c));
-                }
-                builder.AppendLine($" ({token.Start.Offset}:{token.Start.Line + 1},{token.Start.Column})-{token.End.Offset}");
-            }
-            var starkOutput = builder.ToString();
+            var originalTokens = ParseTokens(inputString);
+            var starkOutput = ConvertTokensToString(originalTokens);
 
             Console.WriteLine(">>> ANTLR Output");
             Console.WriteLine(antlrOutput);
@@ -474,6 +483,35 @@ a single line
 
             // Verify that we have the same output
             TextAssert.AreEqual(antlrOutput, starkOutput);
+
+            // Check UTF8 parsing against regular parsing
+            var starkOutputNoOffset = ConvertTokensToString(originalTokens, false);
+            var starkOutputUtf8 = ConvertTokensToString(ParseTokens(inputString, false, utf8: true), false);
+            TextAssert.AreEqual(starkOutputNoOffset, starkOutputUtf8);
+        }
+
+        private static string ConvertTokensToString(List<SyntaxToken> tokens, bool dumpOffset = true)
+        {
+            var builder = new StringBuilder();
+            builder.Clear();
+            for (var j = 0; j < tokens.Count - 1; j++)
+            {
+                var token = tokens[j];
+                var tokenTypeName = token.Type.ToString();
+                for (int i = 0; i < tokenTypeName.Length; i++)
+                {
+                    var c = tokenTypeName[i];
+                    if (i > 0 && char.IsUpper(c))
+                    {
+                        builder.Append('_');
+                    }
+                    builder.Append(char.ToUpperInvariant(c));
+                }
+                builder.AppendLine(dumpOffset
+                    ? $" ({token.Start.Offset}:{token.Start.Line + 1},{token.Start.Column})-{token.End.Offset}"
+                    : $" ({token.Start.Line + 1},{token.Start.Column})-({token.End.Line + 1},{token.End.Column})");
+            }
+            return builder.ToString();
         }
 
         private void VerifySimpleTokens(Dictionary<string, TokenType> simpleTokens)
@@ -482,38 +520,52 @@ a single line
             {
                 var text = token.Key;
                 var charCount = GetUTF32CharacterCount(text);
-                VerifyCodeBlock(text, new Token(token.Value, new TextPosition(0, 0, 0), new TextPosition(token.Key.Length - 1, 0, charCount - 1)) );
+                VerifyCodeBlock(text, new SyntaxToken(token.Value, new TextPosition(0, 0, 0), new TextPosition(token.Key.Length - 1, 0, charCount - 1)) );
             }
         }
 
-        private List<Token> ParseTokens(string text, bool hasErrors = false)
+        private List<SyntaxToken> ParseTokens(string text, bool hasErrors = false, bool utf8 = false)
         {
-            var lexer = new Tokenizer<StringCharacterIterator>(new StringCharacterIterator(text));
-            var tokens = lexer.ToList(); // Force to parse all tokens
-            foreach (var error in lexer.Errors)
+            List<SyntaxToken> tokens;
+            if (utf8)
             {
-                Console.WriteLine(error);
+                var lexer = new Lexer<StringUtf8SourceView, StringCharacterUtf8Iterator>(new StringUtf8SourceView(Encoding.UTF8.GetBytes(text), "<input>"));
+                tokens = lexer.ToList(); // Force to parse all tokens
+                foreach (var error in lexer.Errors)
+                {
+                    Console.WriteLine(error);
+                }
+                Assert.AreEqual(hasErrors, lexer.HasErrors, "Expecting errors");
             }
-            Assert.AreEqual(hasErrors, lexer.HasErrors, "Expecting errors");
+            else
+            {
+                var lexer = new Lexer<StringSourceView, StringCharacterIterator>(new StringSourceView(text, "<input>"));
+                tokens = lexer.ToList(); // Force to parse all tokens
+                foreach (var error in lexer.Errors)
+                {
+                    Console.WriteLine(error);
+                }
+                Assert.AreEqual(hasErrors, lexer.HasErrors, "Expecting errors");
+            }
             return tokens;
         }
 
 
-        private void VerifyCodeBlockWithErrors(string text, params Token[] expectedTokens)
+        private void VerifyCodeBlockWithErrors(string text, params SyntaxToken[] expectedTokens)
         {
             VerifyCodeBlock(text, true, expectedTokens);
         }
 
-        private void VerifyCodeBlock(string text, params Token[] expectedTokens)
+        private void VerifyCodeBlock(string text, params SyntaxToken[] expectedTokens)
         {
             VerifyCodeBlock(text, false, expectedTokens);
         }
 
-        private void VerifyCodeBlock(string text, bool expectErrors, params Token[] expectedTokens)
+        private void VerifyCodeBlock(string text, bool expectErrors, params SyntaxToken[] expectedTokens)
         {
-            var expectedTokenList = new List<Token>();
+            var expectedTokenList = new List<SyntaxToken>();
             expectedTokenList.AddRange(expectedTokens);
-            expectedTokenList.Add(Token.Eof);
+            expectedTokenList.Add(SyntaxToken.Eof);
 
             // Verify tokens
             var tokens = ParseTokens(text, expectErrors);
@@ -526,17 +578,17 @@ a single line
                 var newText = " " + text + " ";
                 var newTokens = ParseTokens(newText);
                 Assert.AreEqual(expectedTokenList.Count, newTokens.Count - 2);
-                Assert.AreEqual(newTokens[0], new Token(TokenType.Spaces, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)));
-                Assert.AreEqual(newTokens[newTokens.Count - 1], Token.Eof);
+                Assert.AreEqual(newTokens[0], new SyntaxToken(TokenType.Whitespaces, new TextPosition(0, 0, 0), new TextPosition(0, 0, 0)));
+                Assert.AreEqual(newTokens[newTokens.Count - 1], SyntaxToken.Eof);
                 if (tokens[0].End.Line > 0)
                 {
                     // We don't check newlines when adding space
-                    Assert.AreEqual(newTokens[newTokens.Count - 2].Type, TokenType.Spaces);
+                    Assert.AreEqual(newTokens[newTokens.Count - 2].Type, TokenType.Whitespaces);
                 }
                 else
                 {
                     var charCount = GetUTF32CharacterCount(newText);
-                    Assert.AreEqual(newTokens[newTokens.Count - 2], new Token(TokenType.Spaces, new TextPosition(newText.Length - 1, 0, charCount - 1), new TextPosition(newText.Length - 1, 0, charCount - 1)));
+                    Assert.AreEqual(newTokens[newTokens.Count - 2], new SyntaxToken(TokenType.Whitespaces, new TextPosition(newText.Length - 1, 0, charCount - 1), new TextPosition(newText.Length - 1, 0, charCount - 1)));
                 }
 
                 Assert.AreEqual(expectedTokenList, tokens, $"Unexpected error while parsing: {text}");
@@ -559,7 +611,7 @@ a single line
             return realLength;            
         }
 
-        private static void VerifyTokenGetText(List<Token> tokens, string text)
+        private static void VerifyTokenGetText(List<SyntaxToken> tokens, string text)
         {
             foreach (var token in tokens)
             {
