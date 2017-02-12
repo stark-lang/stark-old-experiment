@@ -333,9 +333,9 @@ OperatorDescription: OPEN_BRACE OperatorHint* CLOSE_BRACE;
 
 OperatorHint: 'precedence' COLON INTEGER Eod
             | 'associativity' COLON ('right' | 'left') Eod
-            | 'builtin' COLON ExpressionLiteralBool Eod
-            | 'overridable' COLON ExpressionLiteralBool Eod
-            | 'assignment' COLON ExpressionLiteralBool Eod
+            | 'builtin' COLON LiteralBool Eod
+            | 'overridable' COLON LiteralBool Eod
+            | 'assignment' COLON LiteralBool Eod
             | 'id' COLON STRING Eod
             ;
 
@@ -559,7 +559,7 @@ Expression: ExpressionIdentifier
 ExpressionIdentifier: ModulePath? ExpressionIdentifierPath;
 
 ExpressionTemplateArgument: ModulePath? ExpressionIdentifierSubPath ASTERISK 
-                          | ExpressionLiteralSimple
+                          | Literal
                           ;
 
 ExpressionIdentifierPath: IDENTIFIER ExpressionTemplateArguments?;
@@ -576,30 +576,30 @@ ExpressionTemplateArguments:  LESS_THAN ExpressionTemplateArgument (COMMA Expres
 LiteralTypeSuffix: ExpressionIdentifier;
 
 // In the custom parser, we don't expect any whitespace between the literal and its suffix
-ExpressionLiteral: ExpressionThisLiteral
-                 | ExpressionSpecialLiteral
-                 | ExpressionLiteralSimple LiteralTypeSuffix?
+ExpressionLiteral: LiteralThis
+                 | LiteralSpecial
+                 | Literal LiteralTypeSuffix?
                  ;
 
-ExpressionLiteralSimple: ExpressionLiteralBool
-                       | INTEGER
-                       | INTEGER_HEXA
-                       | INTEGER_OCTAL
-                       | INTEGER_BINARY
-                       | FLOAT
-                       | STRING_RAW
-                       | STRING
-                       | CHAR
-                       ;
+Literal: LiteralBool
+       | INTEGER
+       | INTEGER_HEXA
+       | INTEGER_OCTAL
+       | INTEGER_BINARY
+       | FLOAT
+       | STRING_RAW
+       | STRING
+       | CHAR
+       ;
 
 // Special literal: 
-ExpressionSpecialLiteral: '#file'
-                        | '#line'
-                        | '#column'
-                        | '#function'
-                        ;
+LiteralSpecial: '#file'
+              | '#line'
+              | '#column'
+              | '#function'
+              ;
 
-ExpressionThisLiteral: 'this';
+LiteralThis: 'this';
 
 
-ExpressionLiteralBool: 'true' | 'false';
+LiteralBool: 'true' | 'false';
