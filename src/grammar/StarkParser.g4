@@ -462,7 +462,7 @@ Statement: StatementFor
          | StatementEmpty
          ;
 
-StatementFor: LoopLabel? 'for' ForVariable 'in' Expression StatementBlock;
+StatementFor: LoopLabel? 'for' ForVariable 'in' Expression StatementBlock StatementElse?;
 
 LoopLabel: IDENTIFIER COLON;
 
