@@ -396,7 +396,7 @@ ClassMember: ClassField
            | Functions
            ;
 
-ClassField: Visibility? IDENTIFIER COLON Type Eod;
+ClassField: Visibility? ('var'|'let') IDENTIFIER COLON Type Eod;
 
 // -------------------------------------------------------------------------
 // Trait
@@ -449,7 +449,7 @@ Eod: NEW_LINE | SEMI_COLON;
 Statement: StatementFor
          | StatementLoop
          | StatementWhile
-         | StatementLet
+         | StatementVarLet
          | StatementIf
          | StatementBreak
          | StatementContinue
@@ -489,10 +489,10 @@ StatementElseIf: 'else' 'if' LetIf? Expression StatementBlock;
 
 StatementElse: 'else' StatementBlock;
 
-StatementLet: 'let' IDENTIFIER (COLON VariableType)? EQUAL Expression Eod
-            | 'let' 'mutable' IDENTIFIER EQUAL Expression Eod
-            | 'let' 'mutable' IDENTIFIER COLON VariableType (EQUAL Expression)? Eod
-            ;
+StatementVarLet: 'let' IDENTIFIER (COLON VariableType)? EQUAL Expression Eod
+               | 'var' IDENTIFIER EQUAL Expression Eod
+               | 'var' IDENTIFIER COLON VariableType (EQUAL Expression)? Eod
+               ;
 
 StatementUnsafe: 'unsafe' StatementBlock;
 
