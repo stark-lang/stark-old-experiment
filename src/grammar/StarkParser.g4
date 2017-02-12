@@ -274,7 +274,7 @@ Functions: Function
 
 VariableType: Access? Type;
 
-Function: Modifier* IDENTIFIER TemplateParameters? OPEN_PARENTHESIS FunctionParameters? CLOSE_PARENTHESIS FunctionReturnType? Contracts? FunctionBody;
+Function: Modifier* 'func' IDENTIFIER TemplateParameters? OPEN_PARENTHESIS FunctionParameters? CLOSE_PARENTHESIS FunctionReturnType? Contracts? FunctionBody;
 
 FunctionParameters: FunctionParameter (COMMA FunctionParameter)*;
 
@@ -301,7 +301,7 @@ FunctionExpression: '=>' Expression; // TODO: Parsing EQUAL GREATER
 // - trait properties
 // -------------------------------------------------------------------------
 
-Property: Modifier* IDENTIFIER COLON Type PropertyBody;
+Property: Modifier* 'func' IDENTIFIER '->' Type PropertyBody;
 
 PropertyBody: OPEN_BRACE PropertyGetter? PropertySetter? CLOSE_BRACE 
             | FunctionExpression Eod;
