@@ -21,7 +21,7 @@
 //  - use module directive
 //  - pattern matching
 //  - if let / while let
-//  - static members, inheritance and extensions
+//  - static class/struct members (or companion members as in Kotlin), inheritance and extensions
 //  - overflow/checked/unchecked?
 //  - transient semantic
 //  - throws/try semantic
