@@ -59,7 +59,7 @@ namespace Stark.Compiler.Syntax
             return End.Offset < text.Length ? text.Substring(Start.Offset, End.Offset - Start.Offset + 1) : null;
         }
 
-        public string GetText<TTextView>(TTextView text) where TTextView : struct, IStringView
+        public string GetText<TTextView>(TTextView text) where TTextView : IStringView
         {
             if (Type == TokenType.Eof)
             {

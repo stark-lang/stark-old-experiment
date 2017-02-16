@@ -7,15 +7,31 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Stark.Compiler.Collections;
 using Stark.Compiler.Syntax;
 using Stark.Compiler.Text;
 
 namespace Stark.Compiler.Parsing
 {
+    public interface ITokenProvider<out TSourceView> : IEnumerable<SyntaxToken> where TSourceView : ISourceView 
+    {
+        /// <summary>
+        /// Gets a boolean indicating whether this lexer has errors.
+        /// </summary>
+        bool HasErrors { get; }
+
+        TSourceView Source { get; }
+
+        /// <summary>
+        /// Gets error messages.
+        /// </summary>
+        IEnumerable<LogMessage> Errors { get; }
+    }
+
     /// <summary>
     /// Lexer enumerator that generates <see cref="SyntaxToken"/>, to be used from a foreach.
     /// </summary>
-    public class Lexer<TSourceView, TCharReader> : IEnumerable<SyntaxToken> where TSourceView : struct, ISourceView<TCharReader> where TCharReader : struct, CharacterIterator
+    public class Lexer<TSourceView, TCharReader> : ITokenProvider<TSourceView> where TSourceView : struct, ISourceView<TCharReader> where TCharReader : struct, CharacterIterator
     {
         private SyntaxToken _token;
         private TextPosition _position;
@@ -28,6 +44,7 @@ namespace Stark.Compiler.Parsing
         private int _nestedMultilineCommentCount;
         private TCharReader _reader;
         private const int Eof = -1;
+        private TSourceView _sourceView;
 
         /// <summary>
         /// Initialize a new instance of this <see cref="Lexer{TSourceView,TCharReader}" />.
@@ -38,11 +55,11 @@ namespace Stark.Compiler.Parsing
         /// <exception cref="System.ArgumentNullException">If text is null</exception>
         public Lexer(TSourceView sourceView, string sourcePath = null)
         {
-            Source = sourceView;
+            _sourceView = sourceView;
             _reader = sourceView.GetIterator();
         }
 
-        public TSourceView Source;
+        public TSourceView Source => _sourceView;
 
         /// <summary>
         /// Gets a boolean indicating whether this lexer has errors.
@@ -784,7 +801,7 @@ namespace Stark.Compiler.Parsing
             {
                 _errors = new List<LogMessage>();
             }
-            _errors.Add(new LogMessage(ParserMessageType.Error, new SourceSpan(Source.SourcePath, start, end), message));
+            _errors.Add(new LogMessage(ParserMessageType.Error, new SourceSpan(_sourceView.SourcePath, start, end), message));
         }
 
         private void Reset()

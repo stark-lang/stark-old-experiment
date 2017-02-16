@@ -12,11 +12,11 @@ namespace Stark.Compiler.Text
             End = end;
         }
 
-        public string FileName { get; set; }
+        public string FileName;
 
-        public TextPosition Start { get; set; }
+        public TextPosition Start;
 
-        public TextPosition End { get; set; }
+        public TextPosition End;
 
         public override string ToString()
         {
