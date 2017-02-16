@@ -51,8 +51,6 @@ namespace Stark.Compiler.Syntax
 
         [TokenText(")")] CloseParenthesis,
 
-
-
         [TokenText("*")] Asterisk,
 
         [TokenText("+")] Plus,
@@ -104,10 +102,12 @@ namespace Stark.Compiler.Syntax
         [TokenText("await")] Await,
         [TokenText("base")] Base,
         [TokenText("break")] Break,
+        [TokenText("class")] Class,
         [TokenText("const")] Const,
         [TokenText("constructor")] Constructor,
         [TokenText("default")] Default,
         [TokenText("else")] Else,
+        [TokenText("enum")] Enum,
         [TokenText("extends")] Extends,
         [TokenText("extern")] Extern,
         [TokenText("false")] False,
@@ -137,6 +137,7 @@ namespace Stark.Compiler.Syntax
         [TokenText("package")] Package,
         [TokenText("params")] Params,
         [TokenText("partial")] Partial,
+        [TokenText("permanent")] Permanent,
         [TokenText("private")] Private,
         [TokenText("protected")] Protected,
         [TokenText("public")] Public,
@@ -149,13 +150,16 @@ namespace Stark.Compiler.Syntax
         [TokenText("set")] Set,
         [TokenText("sizeof")] Sizeof,
         [TokenText("static")] Static,
+        [TokenText("struct")] Struct,
         [TokenText("this")] This,
         [TokenText("throw")] Throw,
+        [TokenText("trait")] Trait,
         [TokenText("transient")] Transient,
         [TokenText("true")] True,
         [TokenText("typeof")] Typeof,
         [TokenText("unsafe")] Unsafe,
         [TokenText("value")] Value,
+        [TokenText("var")] Var,
         [TokenText("virtual")] Virtual,
         [TokenText("volatile")] Volatile,
         [TokenText("where")] Where,

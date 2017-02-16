@@ -12,15 +12,18 @@ namespace KeywordMatchGenApp
     {
         static void Main(string[] args)
         {
+            var types =
+                "class|struct|trait|enum";
+
             var modifiers =
                 "abstract|async|const|extern|immutable|internal|isolated|mutable|new|override|partial|private|protected|public|readonly|scoped|sealed|static|transient|unsafe|virtual|volatile";
-            var keywords =
-                "alias|as|await|base|break|constructor|default|else|extends|false|fatal|fixed|for|from|func|get|if|implements|import|in|is|let|match|meta|module|operator|out|package|params|ref|requires|return|set|sizeof|this|throw|true|typeof|value|where|while|with";
 
-            var text = modifiers + "|" + keywords;
+            var keywords =
+                "alias|as|await|base|break|constructor|default|else|extends|false|fatal|fixed|for|from|func|get|if|implements|import|in|is|let|match|meta|module|operator|out|package|params|permanent|ref|requires|return|set|sizeof|this|throw|true|typeof|value|var|where|while|with";
+
+            var text = modifiers + "|" + keywords + "|" + types;
             var entries = text.Split('|');
             Array.Sort(entries);
-
 
             Console.WriteLine("ANTLR Lexer:");
             var mapEntries = new Dictionary<string, int>();
