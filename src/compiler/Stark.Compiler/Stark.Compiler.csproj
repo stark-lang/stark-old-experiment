@@ -41,6 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\QueueArray.cs" />
+    <Compile Include="Parsing\Parser.cs" />
+    <Compile Include="Parsing\Parser.ExternDirective.cs" />
+    <Compile Include="Parsing\Parser.ModuleDirective.cs" />
+    <Compile Include="Parsing\Parser.ImportDirective.cs" />
     <Compile Include="Text\char32.cs" />
     <Compile Include="Text\CharHelper.CharacterRanges.cs" />
     <Compile Include="Text\CharHelper.cs" />
