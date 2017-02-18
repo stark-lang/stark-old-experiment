@@ -38,10 +38,10 @@ namespace Stark.Compiler.Parsing
                 return false;
             }
 
+            Close(importDirective);
+
             // Expect Eod but allow to continue (with an error) if we don't find any
             ExpectEod(importDirective);
-
-            Close(importDirective);
             return true;
         }
 
@@ -78,6 +78,7 @@ namespace Stark.Compiler.Parsing
                     EndSkipNewLines();
                     return false;
                 }
+                importPath.ImportList.Add(importNameOrAlias);
 
                 while (_token.Type == TokenType.Comma)
                 {
@@ -103,14 +104,14 @@ namespace Stark.Compiler.Parsing
                 EndSkipNewLines();
                 if (_token.Type != TokenType.CloseBrace)
                 {
-                    LogError($"Unexpected token  [{ToPrintable(_token)}]. Expecting a closing }} for an import path list {{...}}");
+                    LogError($"Unexpected token [{ToPrintable(_token)}]. Expecting a closing }} for an import path list {{...}}");
                     return false;
                 }
                 NextToken();
             }
             else
             {
-                LogError("Expecting identifier, * or {...} for import name");
+                LogError($"Unexpected token [{ToPrintable(_token)}]. Expecting an identifier, * or {{...}} for import name");
                 return false;
             }
 

@@ -246,7 +246,7 @@ namespace Stark.Compiler.Parsing
             for (var i = _pendingModifiers.Count - 1; i >= 0; i--)
             {
                 var modifier = _pendingModifiers[i];
-                LogError(modifier, $"Unexpected modifier before [{type}]");
+                LogError(modifier, $"Unexpected modifier [{ToPrintable(modifier.Token)}] found before [{type}]");
             }
             var hasModifiers = _pendingModifiers.Count > 0;
             _pendingModifiers.Clear();

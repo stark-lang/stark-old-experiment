@@ -148,6 +148,11 @@ namespace Stark.Compiler.Tests
         public void Accept(ImportDirective import)
         {
             Write(import);
+            if (import.Public.HasValue)
+            {
+                Write($", public ", import.Public.Value);
+            }
+
             if (import.ImportPath != null)
             {
                 writer.Write(", ");
@@ -232,6 +237,7 @@ namespace Stark.Compiler.Tests
                 }
             }
         }
+
 
         private void Write<T>(string key, SyntaxValueNode<T> valueNode)
         {

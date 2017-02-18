@@ -155,6 +155,8 @@ namespace Stark.Compiler.Syntax
 
         public ImportPath ImportPath;
 
+        public override string SyntaxName => "import";
+
         public override void Visit(ISyntaxVisitor visitor)
         {
             visitor.Accept(this);

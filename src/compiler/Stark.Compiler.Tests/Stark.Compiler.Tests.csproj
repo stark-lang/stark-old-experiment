@@ -202,10 +202,12 @@
     <None Include="grammar\.editorconfig" />
     <None Include="grammar\0110-extern-package.sk" />
     <None Include="grammar\0100-module.sk" />
+    <None Include="grammar\0120-import.sk" />
     <None Include="packages.config" />
     <Content Include="grammar\.gitattributes" />
     <Content Include="grammar\0110-extern-package.txt" />
     <Content Include="grammar\0100-module.txt" />
+    <Content Include="grammar\0120-import.txt" />
     <Content Include="StarkTokenTests.sk">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
