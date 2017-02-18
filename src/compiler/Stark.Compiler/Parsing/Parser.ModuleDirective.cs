@@ -15,26 +15,21 @@ namespace Stark.Compiler.Parsing
             // ModuleName: IDENTIFIER;
 
             moduleDirective = Open<ModuleDirective>();
-            NextToken(); // skip module token
+
+            // We allow to have new lines with the module and module id
+            BeginSkipNewLines();
+            {
+                NextToken(); // skip module token
+            }
+            EndSkipNewLines();
 
             // If there are any pending modifiers, we verify that we only have public
-            for (var i = _pendingModifiers.Count - 1; i >= 0; i--)
+            var publicModifier = ExpectPublicPendingModifierOnly("module");
+            if (publicModifier.HasValue)
             {
-                var modifier = _pendingModifiers[i];
-                if ((modifier & ModifierFlags.Public) == 0)
-                {
-                    LogError(modifier, "Unexpected modifier for module. Only the public modifier is supported.");
-                    _pendingModifiers.RemoveAt(i);
-                }
-            }
-
-            // If we have any modifiers, the span of the module directive starts on the modifier
-            if (_pendingModifiers.Count > 0)
-            {
-                moduleDirective.Span.Start = _pendingModifiers[0].Span.Start;
-
-                // Important: Clear any pending modifiers 
-                _pendingModifiers.Clear();
+                var modifier = publicModifier.Value;
+                moduleDirective.Span.Start = modifier.Token.Start;
+                moduleDirective.Modifiers.Add(modifier);
             }
 
             // We are expecting only a plain identifier for a module
@@ -46,13 +41,15 @@ namespace Stark.Compiler.Parsing
             }
 
             // Extract module name and span
-            moduleDirective.Name.Span = CurrentSpan;
-            moduleDirective.Name.Value = GetAsText(_token);
+            moduleDirective.Name = GetAsSyntaxValueNode(_token);
+
+            // Skip module name
+            NextToken();
+
+            Close(moduleDirective);
 
             // Expect Eod but allow to continue (with an error) if we don't find any
             ExpectEod(moduleDirective);
-
-            Close(moduleDirective);
             return true;
         }
     }

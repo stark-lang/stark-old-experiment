@@ -3,6 +3,7 @@
 // See license.txt file in the project root for full license information.
 using System;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Stark.Compiler.Text
 {
@@ -37,6 +38,62 @@ namespace Stark.Compiler.Text
         public static bool IsDigit(char32 c)
         {
             return (c >= '0' && c <= '9');
+        }
+
+        /// <summary>
+        /// Converts a string that may have control characters to a printable string
+        /// </summary>
+        public static string PrintableString(string text)
+        {
+            StringBuilder builder = null;
+            for (int i = 0; i < text.Length; i++)
+            {
+                var c = text[i];
+                var str = text[i].ToPrintableString();
+                if (str != null)
+                {
+                    if (builder == null)
+                    {
+                        builder = new StringBuilder(text.Length * 2);
+                        builder.Append(text.Substring(0, i));
+                    }
+                    builder.Append(str);
+                }
+                else
+                {
+                    builder?.Append(c);
+                }
+            }
+            return builder?.ToString() ?? text;
+        }
+
+        public static string ToPrintableString(this char c)
+        {
+            if (c < ' ' || IsWhiteSpace(c))
+            {
+                switch (c)
+                {
+                    case ' ':
+                        return @" ";
+                    case '\b':
+                        return @"\b";
+                    case '\r':
+                        return @"\r";
+                    case '\n':
+                        return @"\n";
+                    case '\t':
+                        return @"\t";
+                    case '\a':
+                        return @"\a";
+                    case '\v':
+                        return @"\v";
+                    case '\f':
+                        return @"\f";
+                    default:
+                        return $"\\u{(int)c:X};";
+                }
+            }
+            return null;
         }
 
         public static bool IsWhiteSpace(char32 c)

@@ -1,0 +1,14 @@
+﻿extern package (2,1)-(2,20), ModuleFullName (2,16)-(2,20), name (2,16)-(2,20) = test1
+extern package (4,1)-(4,27), ModuleFullName (4,16)-(4,27), [0] (4,16)-(4,20) = test1, name (4,23)-(4,27) = test2
+extern package (6,1)-(6,20), ModuleFullName (6,16)-(6,20), name (6,16)-(6,20) = testa
+extern package (6,23)-(6,42), ModuleFullName (6,38)-(6,42), name (6,38)-(6,42) = testb
+extern package (8,1)-(10,5), ModuleFullName (10,1)-(10,5), name (10,1)-(10,5) = test3
+extern package (12,1)-(16,7), ModuleFullName (14,1)-(16,7), [0] (14,1)-(14,5) = test4, name (16,3)-(16,7) = test5
+extern package (24,1)-(24,20), ModuleFullName (24,16)-(24,20), name (24,16)-(24,20) = test1
+extern package (26,1)-(26,27), ModuleFullName (26,16)-(26,27), [0] (26,16)-(26,20) = test1, name (26,23)-(26,27) = test2
+extern package (28,1)-(28,20), ModuleFullName (28,16)-(28,20), name (28,16)-(28,20) = test6
+<input>(18,16) : error : Unexpected token [5]. Expecting an identifier while parsing a full module name
+<input>(20,8) : error : Unexpected extern [blabla]
+<input>(22,23) : error : Unexpected token [5]. Expecting an identifier while parsing a full module name
+<input>(24,21) : error : Error while parsing extern package: Unexpected tokens [<test2]. Expecting EOF or EOL or ; after declaration
+<input>(26,29) : error : Error while parsing extern package: Unexpected tokens [boooo]. Expecting EOF or EOL or ; after declaration

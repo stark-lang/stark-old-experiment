@@ -1,0 +1,14 @@
+﻿module (2,1)-(2,12), name (2,8)-(2,12) = test1
+module (4,1)-(4,19), modifier0 (4,1)-(4,6) = Public, name (4,15)-(4,19) = test2
+module (6,1)-(6,19), modifier0 (6,1)-(6,6) = Public, name (6,15)-(6,19) = test3
+module (6,21)-(6,39), modifier0 (6,21)-(6,26) = Public, name (6,35)-(6,39) = test4
+module (8,1)-(10,7), modifier0 (8,1)-(8,6) = Public, name (10,3)-(10,7) = test5
+module (14,1)-(14,34), modifier0 (14,1)-(14,6) = Public, name (14,22)-(14,34) = test_invalid1
+module (16,16)-(16,35), name (16,23)-(16,35) = test_invalid2
+module (18,1)-(18,20), name (18,8)-(18,20) = test_invalid3
+module (20,1)-(20,12), name (20,8)-(20,12) = test6
+<input>(12,8) : error : Expecting a module identifier
+<input>(14,8) : error : Unexpected duplicated modifier [public]
+<input>(16,8) : error : Unexpected modifier [partial] for module. Only the [public] modifier is supported.
+<input>(16,1) : error : Unexpected modifier [static] for module. Only the [public] modifier is supported.
+<input>(18,22) : error : Error while parsing module: Unexpected tokens [::<=]. Expecting EOF or EOL or ; after declaration

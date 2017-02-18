@@ -1,0 +1,3 @@
+# Use LF for test sk end of lines
+[*]
+end_of_line = lf

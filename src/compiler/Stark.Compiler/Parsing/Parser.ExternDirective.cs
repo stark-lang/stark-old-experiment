@@ -1,4 +1,4 @@
-﻿// Copyright (c) The Stark Programming Language Contributors. All rights reserved.
+// Copyright (c) The Stark Programming Language Contributors. All rights reserved.
 // Licensed under the MIT license. 
 // See license.txt file in the project root for full license information.
 
@@ -23,27 +23,37 @@ namespace Stark.Compiler.Parsing
             syntaxNode = null;
             CheckNoModifiers("extern");
             var externToken = _token;
-            NextToken(); // skip extern token
+
+            BeginSkipNewLines();
+            {
+                NextToken(); // skip extern token
+            }
+            EndSkipNewLines();
 
             if (_token.Type == TokenType.Package)
             {
-                NextToken(); // skip package token
+                var externPackageDirective = Open<ExternPackageDirective>(externToken);
 
-                ExternPackage externPackage;
-                if (TryParseModuleFullName(out externPackage))
+                BeginSkipNewLines();
                 {
-                    externPackage.Span.Start = externToken.Start;
+                    NextToken(); // skip package token
+                }
+                EndSkipNewLines();
 
+                if (TryParseModuleFullName(out externPackageDirective.PackageName))
+                {
                     // Expect Eod but allow to continue (with an error) if we don't find any
-                    ExpectEod(externPackage);
+                    syntaxNode = Close(externPackageDirective);
 
-                    syntaxNode = Close(externPackage);
+                    ExpectEod(externPackageDirective);
                     return true;
                 }
             }
             else
             {
-                LogError($"Unsupported extern [{GetAsText(_token)}");
+                LogError(HasEod()
+                    ? $"Unexpected EOF, or EOL or ; after extern"
+                    : $"Unexpected extern [{ToPrintable(_token)}]");
             }
 
             SkipAfterEod();

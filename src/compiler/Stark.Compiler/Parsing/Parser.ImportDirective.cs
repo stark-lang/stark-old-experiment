@@ -23,28 +23,13 @@ namespace Stark.Compiler.Parsing
             // ImportNameOrAlias: ImportName ('as' ImportName)?;
 
             importDirective = Open<ImportDirective>();
+
+            BeginSkipNewLines();
             NextToken(); // skip import token
+            EndSkipNewLines();
 
-            // If there are any pending modifiers, we verify that we only have public
-            for (var i = _pendingModifiers.Count - 1; i >= 0; i--)
-            {
-                var modifier = _pendingModifiers[i];
-                if ((modifier & ModifierFlags.Public) == 0)
-                {
-                    LogError(modifier, "Unexpected modifier for import. Only the public modifier is supported.");
-                    _pendingModifiers.RemoveAt(i);
-                }
-            }
-
-            // If we have any modifiers, the span of the module directive starts on the modifier
-            if (_pendingModifiers.Count > 0)
-            {
-                importDirective.Span.Start = _pendingModifiers[0].Span.Start;
-                importDirective.Public = new SyntaxValueNode<ModifierFlags>(_pendingModifiers[0].Span, ModifierFlags.Public);
-
-                // Important: Clear any pending modifiers 
-                _pendingModifiers.Clear();
-            }
+            // Extract the public modifier if any
+            importDirective.Public = ExpectPublicPendingModifierOnly("import");
 
             // Parse the import path
             if (!TryParseImportPath(out importDirective.ImportPath))
@@ -62,7 +47,7 @@ namespace Stark.Compiler.Parsing
 
         private bool TryParseImportPath(out ImportPath importPath)
         {
-            if (!TryParseModulePath(out importPath))
+            if (!TryParseModulePath(true, out importPath))
             {
                 return false;
             }
@@ -83,14 +68,14 @@ namespace Stark.Compiler.Parsing
             }
             else if (_token.Type == TokenType.OpenBrace)
             {
+                // Inside a {...}, all NewLines are ignored
+                BeginSkipNewLines();
                 NextToken(); // Skip OpenBrace
-
-                // Inside a {...}, we allow new lines
-                _allowNewLineLevel++;
 
                 if (!TryParseImportNameOrAlias(out importNameOrAlias))
                 {
-                    LogError($"Invalid token found [{GetAsText(_token)}]. Expecting at least an identifier inside an import path list {{...}}");
+                    LogError($"Unexpected token [{ToPrintable(_token)}]. Expecting at least an identifier inside an import path list {{...}}");
+                    EndSkipNewLines();
                     return false;
                 }
 
@@ -108,17 +93,17 @@ namespace Stark.Compiler.Parsing
                             break;
                         }
 
-                        LogError($"Invalid token found [{GetAsText(_token)}]. Expecting at least an identifier inside an import path list {{...}}");
-                        _allowNewLineLevel--;
+                        LogError($"Unexpected token [{ToPrintable(_token)}]. Expecting at least an identifier inside an import path list {{...}}");
+                        EndSkipNewLines();
                         return false;
                     }
                 }
 
                 // Exit of the list, restore expecting newline
-                _allowNewLineLevel--;
+                EndSkipNewLines();
                 if (_token.Type != TokenType.CloseBrace)
                 {
-                    LogError($"Invalid token found [{GetAsText(_token)}]. Expecting a closing }} for an import path list {{...}}");
+                    LogError($"Unexpected token  [{ToPrintable(_token)}]. Expecting a closing }} for an import path list {{...}}");
                     return false;
                 }
                 NextToken();
@@ -141,68 +126,97 @@ namespace Stark.Compiler.Parsing
                 return false;
             }
 
-            importNameOrAlias.Name = new SyntaxValueNode<string>(CurrentSpan, GetAsText(_token));
+            importNameOrAlias.Name = GetAsSyntaxValueNode(_token);
 
-            // Skip the name
-            NextToken();
+            bool isValid = true;
+
+            // Skip the lines when parsing an as, as we can have any NL in between
+            BeginSkipNewLines();
 
             // Check if we have an alias
-            if (_token.Type == TokenType.As)
+            if (PreviewToken(1).Type == TokenType.As)
             {
+                NextToken(); // Skip name
                 NextToken(); // skip as keyword
+                EndSkipNewLines();
 
-                var tokenFound = _token;
-                if (!ExpectToken("identifier", $"alias for import name [{importNameOrAlias.Name.Value}]", TokenType.Identifier))
+                if (_token.Type != TokenType.Identifier)
                 {
-                    return false;
+                    LogError(_token, $"Unexpected token [{ToPrintable(_token)}]. Expecting an identifier after an alias name");
+                    isValid = false;
                 }
-                importNameOrAlias.Alias = new SyntaxValueNode<string>(GetSpanForToken(tokenFound), GetAsText(tokenFound));
+                else
+                {
+                    importNameOrAlias.Alias = GetAsSyntaxValueNode(_token);
+                    NextToken();
+                }
+            }
+            else
+            {
+                // We don't have [as] keyword, so we restore NL parsing
+                EndSkipNewLines();
+
+                // Skip name
+                NextToken();
             }
 
-            return true;
+            return isValid;
         }
 
         private bool TryParseModuleFullName<T>(out T modulePath) where T : ModuleFullName, new()
         {
-            if (!TryParseModulePath(out modulePath))
+            // A ModuleFullName don't expect any this/base module prefix
+            if (!TryParseModulePath(false, out modulePath))
             {
                 return false;
             }
 
             if (_token.Type != TokenType.Identifier)
             {
-                LogError("Expecting an identifier while parsing a full module name");
+                LogError($"Unexpected token [{ToPrintable(_token)}]. Expecting an identifier while parsing a full module name");
                 return false;
             }
 
             // Fetch the module name
-            modulePath.Name.Span = CurrentSpan;
-            modulePath.Name.Value = GetAsText(_token);
+            modulePath.Name = GetAsSyntaxValueNode(_token);
+
+            // Skip Identifier
+            NextToken();
+
+            Close(modulePath);
 
             return true;
         }
 
-        private bool TryParseModulePath<T>(out T modulePath) where T : ModulePath, new()
+        private bool TryParseModulePath<T>(bool allowThisAndBase, out T modulePath) where T : ModulePath, new()
         {
             modulePath = Open<T>();
+
+            // Skip any newlines when parsing a module path
+            // as the module path is not used alone (it always expect a trailing ::)
+            BeginSkipNewLines();
+
             bool isValidPath = true;
-            if (_token.Type == TokenType.This)
+            if (allowThisAndBase)
             {
-                modulePath.Items.Add(new SyntaxValueNode<string>(CurrentSpan, "this"));
-                NextToken();
-                isValidPath = ExpectDoubleColon("module path after 'this'");
-            }
-            else
-            {
-                while (_token.Type == TokenType.Base)
+                if (_token.Type == TokenType.This)
                 {
-                    modulePath.Items.Add(new SyntaxValueNode<string>(CurrentSpan, "base"));
+                    modulePath.Items.Add(new SyntaxValueNode<string>(_token, "this"));
                     NextToken();
-                    var isFollowedByColon = ExpectDoubleColon("module path after 'base'");
-                    if (!isFollowedByColon)
+                    isValidPath = ExpectDoubleColon("module path after 'this'");
+                }
+                else
+                {
+                    while (_token.Type == TokenType.Base)
                     {
-                        isValidPath = false;
-                        break;
+                        modulePath.Items.Add(new SyntaxValueNode<string>(_token, "base"));
+                        NextToken();
+                        var isFollowedByColon = ExpectDoubleColon("module path after 'base'");
+                        if (!isFollowedByColon)
+                        {
+                            isValidPath = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -210,10 +224,10 @@ namespace Stark.Compiler.Parsing
             // Parse all identifiers that may composed the modulePath
             if (isValidPath)
             {
-                while (_token.Type == TokenType.Identifier && PreviewToken(1).Type == TokenType.Asterisk && PreviewToken(2).Type == TokenType.Asterisk)
+                while (_token.Type == TokenType.Identifier && PreviewToken(1).Type == TokenType.Colon && PreviewToken(2).Type == TokenType.Colon)
                 {
-                    var id = GetAsText(_token);
-                    modulePath.Items.Add(new SyntaxValueNode<string>(CurrentSpan, id));
+                    var id = ToText(_token);
+                    modulePath.Items.Add(new SyntaxValueNode<string>(_token, id));
                     NextToken(); // Skip identifier
 
                     // We verify that we have an exact :: following it (as the Preview may introduce spaces, we need to check that it is actually a plain ::
@@ -223,6 +237,14 @@ namespace Stark.Compiler.Parsing
                         break;
                     }
                 }
+            }
+
+            // Restore newlines parsing
+            EndSkipNewLines();
+
+            if (isValidPath)
+            {
+                Close(modulePath);
             }
 
             return isValidPath;

@@ -14,6 +14,11 @@ namespace Stark.Compiler.Text
 
         public string FileName;
 
+        public int Offset => Start.Offset;
+
+        public int Length => End.Offset - Start.Offset + 1;
+
+
         public TextPosition Start;
 
         public TextPosition End;

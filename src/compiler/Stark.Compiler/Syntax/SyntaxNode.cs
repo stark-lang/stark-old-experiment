@@ -9,6 +9,18 @@ using Stark.Compiler.Text;
 
 namespace Stark.Compiler.Syntax
 {
+
+    public interface ISyntaxVisitor
+    {
+        void Accept(SyntaxNode node);
+
+        void Accept(ModuleDirective module);
+
+        void Accept(ExternPackageDirective externPackage);
+
+        void Accept(ImportDirective import);
+    }
+
     // WIP: Temporary SyntaxNodes
 
     // TODO: Implement as a struct instead
@@ -16,20 +28,27 @@ namespace Stark.Compiler.Syntax
     {
     }
 
-    public abstract class SyntaxNode
+    public abstract class SyntaxNodeBase
     {
         public SourceSpan Span;
+
+        public virtual string SyntaxName => this.GetType().Name;
+    }
+
+    public abstract class SyntaxNode : SyntaxNodeBase
+    {
+        public abstract void Visit(ISyntaxVisitor visitor);
     }
 
     public struct SyntaxValueNode<T>
     {
-        public SyntaxValueNode(SourceSpan span, T value)
+        public SyntaxValueNode(SyntaxToken token, T value)
         {
-            Span = span;
+            Token = token;
             Value = value;
         }
 
-        public SourceSpan Span;
+        public SyntaxToken Token;
 
         public T Value;
 
@@ -57,19 +76,42 @@ namespace Stark.Compiler.Syntax
         }
 
         public ValueList<SyntaxNode> Nodes;
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            foreach (var directive in Nodes)
+            {
+                directive.Visit(visitor);
+            }
+        }
     }
 
-    public abstract class Declaration : SyntaxNode
+    public abstract class Directive : SyntaxNode
     {
+    }
+
+    public abstract class Declaration : Directive
+    {
+        protected Declaration()
+        {
+            Modifiers = new ValueList<SyntaxValueNode<ModifierFlags>>();
+        }
+
         public ValueList<SyntaxValueNode<ModifierFlags>> Modifiers;
     }
 
     public class ModuleDirective : Declaration
     {
         public SyntaxValueNode<string> Name;
+
+        public override string SyntaxName => "module";
+
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
-    public class ModulePath : SyntaxNode
+    public class ModulePath : SyntaxNodeBase
     {
         public ModulePath()
         {
@@ -81,10 +123,6 @@ namespace Stark.Compiler.Syntax
 
     public class ModuleFullName : ModulePath
     {
-        public ModuleFullName()
-        {
-        }
-
         public SyntaxValueNode<string> Name;
     }
 
@@ -111,20 +149,36 @@ namespace Stark.Compiler.Syntax
     }
 
 
-    public class ImportDirective : SyntaxNode
+    public class ImportDirective : Directive
     {
         public SyntaxValueNode<ModifierFlags>? Public;
 
         public ImportPath ImportPath;
+
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
-    public class ExternPackage : ModuleFullName
+    public class ExternPackageDirective : Directive
     {
+        public ModuleFullName PackageName;
+
+        public override string SyntaxName => "extern package";
+
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public class TypeReference : SyntaxNode
     {
-        
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public abstract class TypeDeclaration : ContainerDeclaration
@@ -139,24 +193,45 @@ namespace Stark.Compiler.Syntax
         public TypeReference Extends;
 
         public ValueList<TypeReference> Implements;
+
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public class EnumDeclaration : TypeDeclaration
     {
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public class TraitDeclaration : TypeDeclaration 
     {
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public class VariableDeclaration : SyntaxNode
     {
         public TypeReference Type { get; set; }
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public class TemplateParameter : SyntaxNode
     {
         public SyntaxValueNode<string> Name;
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public class FunctionDeclaration : Declaration
@@ -168,6 +243,10 @@ namespace Stark.Compiler.Syntax
         public TypeReference ReturnType { get; set; }
 
         public ValueList<Statement> Statememts;
+        public override void Visit(ISyntaxVisitor visitor)
+        {
+            visitor.Accept(this);
+        }
     }
 
     public abstract class Statement : SyntaxNode

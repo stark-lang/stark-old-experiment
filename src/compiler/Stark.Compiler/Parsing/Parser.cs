@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 using Stark.Compiler.Collections;
 using Stark.Compiler.Syntax;
 using Stark.Compiler.Text;
@@ -140,6 +142,7 @@ namespace Stark.Compiler.Parsing
                         continueParsing = !TryParseModule(out moduleDirective);
                         nextNode = moduleDirective;
                         break;
+
                     case TokenType.Import:
                         ImportDirective importDirective;
                         continueParsing = !TryParseImport(out importDirective);
@@ -182,7 +185,8 @@ namespace Stark.Compiler.Parsing
                         throw new NotImplementedException();
                         break;
                     default:
-                        LogError($"Unexpected token [{GetAsText(_token)}] found");
+                        LogError($"Unexpected token [{ToPrintable(_token)}] found");
+                        NextToken();
                         break;
                 }
             }
@@ -198,21 +202,43 @@ namespace Stark.Compiler.Parsing
             {
                 if ((it & visibilityFlags) != 0)
                 {
-                    // TODO: Improve the message here
-                    LogError("Duplicated modifier declaration");
+                    LogError($"Unexpected duplicated modifier [{ToPrintable(_token)}]");
                     NextToken();
                     return;
                 }
             }
 
-            var pendingModifier = new SyntaxValueNode<ModifierFlags>()
-            {
-                Span = { FileName = _lexer.Source.SourcePath, Start = _token.Start, End = _token.End },
-                Value = visibilityFlags
-            };
+            var pendingModifier = new SyntaxValueNode<ModifierFlags>(_token, visibilityFlags);
             _pendingModifiers.Add(pendingModifier);
 
             NextToken();
+        }
+
+        private SyntaxValueNode<string> GetAsSyntaxValueNode(SyntaxToken token)
+        {
+            return new SyntaxValueNode<string>(token, ToText(token));
+        }
+
+        private SyntaxValueNode<ModifierFlags>? ExpectPublicPendingModifierOnly(string context)
+        {
+            // If there are any pending modifiers, we verify that we only have public
+            for (var i = _pendingModifiers.Count - 1; i >= 0; i--)
+            {
+                var modifier = _pendingModifiers[i];
+                if ((modifier & ModifierFlags.Public) == 0)
+                {
+                    LogError(modifier, $"Unexpected modifier [{ToPrintable(modifier.Token)}] for {context}. Only the [public] modifier is supported.");
+                    _pendingModifiers.RemoveAt(i);
+                }
+            }
+
+            if (_pendingModifiers.Count > 0)
+            {
+                var result = _pendingModifiers[0];
+                _pendingModifiers.Clear();
+                return result;
+            }
+            return null;
         }
 
         private bool CheckNoModifiers(string type)
@@ -233,7 +259,7 @@ namespace Stark.Compiler.Parsing
             {
                 NextToken();
             }
-            if (_token.Type != TokenType.NewLine)
+            if (_token.Type != TokenType.Eof)
             {
                 NextToken();
             }
@@ -251,7 +277,7 @@ namespace Stark.Compiler.Parsing
                 NextToken(); // skip token1
                 return true;
             }
-            LogError($"Expecting token [{tokenName}] but found [{GetAsText(_token)} while parsing {context}");
+            LogError($"Expecting token [{tokenName}] but found [{ToPrintable(_token)} while parsing {context}");
             return false;
         }
 
@@ -265,17 +291,33 @@ namespace Stark.Compiler.Parsing
             }
 
             var invalidToken = _token.Type == token1 ? PreviewToken(1, true) : _token;
-            LogError(invalidToken, $"Expecting token [{tokenName}] but found [{GetAsText(invalidToken)} while parsing {context}");
+            LogError(invalidToken, $"Expecting token [{tokenName}] but found [{ToPrintable(invalidToken)} while parsing {context}");
             return false;
         }
 
         private bool ExpectEod(SyntaxNode statement)
         {
-            NextToken();
+            // If we don't have an End Of Declaration (EOF or EOL or ;) following this statement
+            // Output an error
             var hasEod = HasEod();
             if (!hasEod)
             {
-                LogError(statement, $"Expecting <EOL>/end of line after");
+                var errorSpan = CurrentSpan;
+                while (!HasEod())
+                {
+                    NextToken();
+                }
+                errorSpan.End = _previousToken.End;
+
+                LogError(statement, errorSpan, $"Unexpected tokens [{ToPrintable(errorSpan)}]. Expecting EOF or EOL or ; after declaration");
+                if (_token.Type != TokenType.Eof)
+                {
+                    NextToken();
+                }
+            }
+            else
+            {
+                NextToken();
             }
             return hasEod;
         }
@@ -285,26 +327,35 @@ namespace Stark.Compiler.Parsing
             return _token.Type == TokenType.NewLine || _token.Type == TokenType.SemiColon || _token.Type == TokenType.Eof;
         }
 
-
-        private T Open<T>() where T : SyntaxNode, new()
+        private T Open<T>() where T : SyntaxNodeBase, new()
         {
             return Open<T>(_token);
         }
 
-        private T Open<T>(SyntaxToken startToken) where T : SyntaxNode, new()
+        private T Open<T>(SyntaxToken startToken) where T : SyntaxNodeBase, new()
         {
             return new T() { Span = { FileName = _lexer.Source.SourcePath, Start = startToken.Start } };
         }
 
-        private T Close<T>(T statement) where T : SyntaxNode
+        private T Close<T>(T statement) where T : SyntaxNodeBase
         {
             statement.Span.End = _previousToken.End;
             return statement;
         }
 
-        private string GetAsText(SyntaxToken localToken)
+        private string ToPrintable(SyntaxToken localToken)
+        {
+            return CharHelper.PrintableString(ToText(localToken));
+        }
+
+        private string ToText(SyntaxToken localToken)
         {
             return localToken.GetText(_lexer.Source);
+        }
+
+        private string ToPrintable(SourceSpan span)
+        {
+            return CharHelper.PrintableString(_lexer.Source.GetString(span.Offset, span.Length));
         }
 
         private void NextToken()
@@ -375,19 +426,36 @@ namespace Stark.Compiler.Parsing
                 return SyntaxToken.Eof;
             }
 
+            offset--;
             // optimized case for last element
             if (offset >= _tokensPreview.Count)
             {
                 return _tokensPreview[_tokensPreview.Count - 1];
             }
 
-            return _tokensPreview[offset - 1];
+            return _tokensPreview[offset];
         }
 
         private bool IsHidden(TokenType tokenType)
         {
             return tokenType == TokenType.Whitespaces || tokenType == TokenType.Comment || tokenType == TokenType.CommentMultiLine ||
                    (tokenType == TokenType.NewLine && _allowNewLineLevel > 0);
+        }
+
+        private void BeginSkipNewLines()
+        {
+            _allowNewLineLevel++;
+            // If we have any newline on the current token, we can skip them
+            while (_token.Type == TokenType.NewLine)
+            {
+                NextToken();
+            }
+        }
+
+        private void EndSkipNewLines()
+        {
+            Debug.Assert(_allowNewLineLevel > 0);
+            _allowNewLineLevel--;
         }
 
         private void LogError(string text)
@@ -403,7 +471,7 @@ namespace Stark.Compiler.Parsing
 
         private void LogError<T>(SyntaxValueNode<T> tokenArg, string text)
         {
-            LogError(tokenArg.Span, text);
+            LogError(tokenArg.Token, text);
         }
 
         private SourceSpan GetSpanForToken(SyntaxToken tokenArg)
@@ -423,15 +491,7 @@ namespace Stark.Compiler.Parsing
 
         private void LogError(SyntaxNode node, SourceSpan span, string message)
         {
-//            var syntax = ScriptSyntaxAttribute.Get(node);
-            string inMessage = " in";
-            if (message.EndsWith("after"))
-            {
-                inMessage = string.Empty;
-            }
-            //          LogError(span, $"Error while parsing {syntax.Name}: {message}{inMessage}: {syntax.Example}");
-            // TODO
-            LogError(span, $"Error while parsing {node.GetType().ToString()}: {message}{inMessage}: TODO example");
+            LogError(span, $"Error while parsing {node.SyntaxName}: {message}");
         }
 
         private void Log(LogMessage logMessage)
