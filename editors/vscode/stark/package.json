@@ -14,7 +14,7 @@
         "languages": [{
             "id": "stark",
             "aliases": ["Stark", "stark"],
-            "extensions": [".sk"],
+            "extensions": [".st"],
             "configuration": "./language-configuration.json"
         }],
         "grammars": [{

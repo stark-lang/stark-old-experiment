@@ -442,7 +442,7 @@ a single line
         public static string LoadTestTokens()
         {
             var inputFilePath = Path.Combine(Path.GetDirectoryName(typeof(TestLexer).Assembly.Location),
-                "StarkTokenTests.sk");
+                "StarkTokenTests.st");
             return File.ReadAllText(inputFilePath);
         }
 

@@ -19,7 +19,7 @@ namespace Stark.Compiler.Tests
     public class TestParser
     {
         private const string RelativeBasePath = @"..\..\grammar";
-        private const string InputFilePattern = "*.sk";
+        private const string InputFilePattern = "*.st";
         private const string OutputEndFileExtension = ".txt";
 
         [TestCaseSource("TestFiles")]

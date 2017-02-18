@@ -1,7 +1,7 @@
 # [PackageDev] target_format: plist, ext: tmLanguage
 name: Stark
 scopeName: source.stark
-fileTypes: [sk]
+fileTypes: [st]
 uuid: 582789B5-991D-49E1-8E39-54327B3DBDFF
 
 patterns:
@@ -17,48 +17,48 @@ repository:
   builtin-types:
     match: \b(bool|char8|char16|char32|float64|float32|int64|int32|int16|int8|uint64|uint32|uint16|uint8|int|uint|intptr|uintptr|object|string8|string16|string32)\b
     captures:
-      '1': {name: keyword.type.sk}
+      '1': {name: keyword.type.st}
   visibility-modifiers:
-    name: storage.modifier.sk
+    name: storage.modifier.st
     match: (?<!\.)\b(abstract|async|const|extern|immutable|internal|isolated|mutable|new|override|partial|private|protected|public|readonly|scoped|sealed|static|transient|unsafe|virtual|volatile)\b
   type-declarations:
     patterns:
-    - name: keyword.other.class.sk
+    - name: keyword.other.class.st
       match: \bclass\b
-    - name: keyword.other.struct.sk
+    - name: keyword.other.struct.st
       match: \bstruct\b
-    - name: keyword.other.trait.sk
+    - name: keyword.other.trait.st
       match: \btrait\b
-    - name: keyword.other.enum.sk
+    - name: keyword.other.enum.st
       match: \benum\b
   keywords:
-    name: keyword.type.sk
+    name: keyword.type.st
     match: \b(alias|as|await|base|break|constructor|default|else|extends|false|fatal|fixed|for|from|func|get|if|implements|import|in|is|let|match|meta|module|operator|out|package|params|permanent|ref|requires|return|set|sizeof|this|throw|true|typeof|value|var|where|while|with)\b
   comment:
     patterns:
-    - name: comment.block.sk
+    - name: comment.block.st
       begin: /\*
       beginCaptures:
-        '0': {name: punctuation.definition.comment.sk}
+        '0': {name: punctuation.definition.comment.st}
       end: \*/
       endCaptures:
-        '0': {name: punctuation.definition.comment.sk}
+        '0': {name: punctuation.definition.comment.st}
     - begin: (^\s+)?(?=//)
       beginCaptures:
-        '1': {name: punctuation.whitespace.comment.leading.sk}
+        '1': {name: punctuation.whitespace.comment.leading.st}
       end: (?=$)
       patterns:
-      - name: comment.block.documentation.sk
+      - name: comment.block.documentation.st
         begin: (?<!/)///(?!/)
         beginCaptures:
-          '0': {name: punctuation.definition.comment.sk}
+          '0': {name: punctuation.definition.comment.st}
         end: (?=$)
         patterns:
         - include: '#xml-doc-comment'
-      - name: comment.line.double-slash.sk
+      - name: comment.line.double-slash.st
         begin: (?<!/)//(?!/)
         beginCaptures:
-          '0': {name: punctuation.definition.comment.sk}
+          '0': {name: punctuation.definition.comment.st}
         end: (?=$)
   literals:
     patterns:
@@ -69,58 +69,58 @@ repository:
 
   numeric-literal:
     patterns:
-    - name: constant.numeric.hex.sk
+    - name: constant.numeric.hex.st
       match: \b0(x|X)[0-9a-fA-F_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b
-    - name: constant.numeric.binary.sk
+    - name: constant.numeric.binary.st
       match: \b0(b|B)[01_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b
-    - name: constant.numeric.decimal.sk
+    - name: constant.numeric.decimal.st
       match: \b([0-9_]+)?\.[0-9_]+((e|E)[0-9]+)?(F|f|D|d|M|m)?\b
-    - name: constant.numeric.decimal.sk
+    - name: constant.numeric.decimal.st
       match: \b[0-9_]+(e|E)[0-9_]+(F|f|D|d|M|m)?\b
-    - name: constant.numeric.decimal.sk
+    - name: constant.numeric.decimal.st
       match: \b[0-9_]+(F|f|D|d|M|m)\b
-    - name: constant.numeric.decimal.sk
+    - name: constant.numeric.decimal.st
       match: \b[0-9_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b
  
   char-literal:
-    name: string.quoted.single.sk
+    name: string.quoted.single.st
     begin: ''''
     beginCaptures:
-      '0': {name: punctuation.definition.char.begin.sk}
+      '0': {name: punctuation.definition.char.begin.st}
     end: (\')|((?:[^\\\n])$)
     endCaptures:
-      '1': {name: punctuation.definition.char.end.sk}
-      '2': {name: invalid.illegal.newline.sk}
+      '1': {name: punctuation.definition.char.end.st}
+      '2': {name: invalid.illegal.newline.st}
     patterns:
     - include: '#string-character-escape'
  
   string-character-escape:
-    name: constant.character.escape.sk
+    name: constant.character.escape.st
     match: \\.
  
   string-literal:
-    name: string.quoted.double.sk
+    name: string.quoted.double.st
     begin: (?<!@)"
     beginCaptures:
-      '0': {name: punctuation.definition.string.begin.sk}
+      '0': {name: punctuation.definition.string.begin.st}
     end: (")|((?:[^\\\n])$)
     endCaptures:
-      '1': {name: punctuation.definition.string.end.sk}
-      '2': {name: invalid.illegal.newline.sk}
+      '1': {name: punctuation.definition.string.end.st}
+      '2': {name: invalid.illegal.newline.st}
     patterns:
     - include: '#string-character-escape'
 
   verbatim-string-character-escape:
-    name: constant.character.escape.sk
+    name: constant.character.escape.st
     match: '""'
 
   verbatim-string-literal:
-    name: string.quoted.double.sk
+    name: string.quoted.double.st
     begin: '@"'
     beginCaptures:
-      '0': {name: punctuation.definition.string.begin.sk}
+      '0': {name: punctuation.definition.string.begin.st}
     end: '"(?=[^"])'
     endCaptures:
-      '0': {name: punctuation.definition.string.end.sk}
+      '0': {name: punctuation.definition.string.end.st}
     patterns:
     - include: '#verbatim-string-character-escape'
