@@ -52,5 +52,7 @@ import badbase::base
 import testbadlist::{}
 // import list with missing id
 import testbadlist::{,}
+// invalid modifier
+static partial import testbadmodifiers
 // Check Eod via Eof
 import test7

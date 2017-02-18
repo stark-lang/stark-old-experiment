@@ -16,7 +16,8 @@ import (36,1)-(36,22), ImportPath (36,8)-(36,22), [0] (36,8)-(36,11) = base :: n
 import (38,1)-(38,28), ImportPath (38,8)-(38,28), [0] (38,8)-(38,11) = base, [1] (38,14)-(38,17) = base :: name (38,20)-(38,28) = testbase2
 import (44,1)-(44,12), ImportPath (44,8)-(44,12) :: name (44,8)-(44,12) = test1
 import (46,1)-(46,19), ImportPath (46,8)-(46,19), [0] (46,8)-(46,12) = test1 :: name (46,15)-(46,19) = test2
-import (56,1)-(56,12), ImportPath (56,8)-(56,12) :: name (56,8)-(56,12) = test7
+import (56,16)-(56,38), ImportPath (56,23)-(56,38) :: name (56,23)-(56,38) = testbadmodifiers
+import (58,1)-(58,12), ImportPath (58,8)-(58,12) :: name (58,8)-(58,12) = test7
 <input>(40,8) : error : Unexpected token [5]. Expecting an identifier, * or {...} for import name
 <input>(42,15) : error : Unexpected token [6]. Expecting an identifier, * or {...} for import name
 <input>(44,13) : error : Error while parsing import: Unexpected tokens [<test2]. Expecting EOF or EOL or ; after declaration
@@ -25,3 +26,5 @@ import (56,1)-(56,12), ImportPath (56,8)-(56,12) :: name (56,8)-(56,12) = test7
 <input>(50,17) : error : Unexpected token [base]. Expecting an identifier, * or {...} for import name
 <input>(52,22) : error : Unexpected token [}]. Expecting at least an identifier inside an import path list {...}
 <input>(54,22) : error : Unexpected token [,]. Expecting at least an identifier inside an import path list {...}
+<input>(56,8) : error : Unexpected modifier [partial] for import. Only the [public] modifier is supported.
+<input>(56,1) : error : Unexpected modifier [static] for import. Only the [public] modifier is supported.
