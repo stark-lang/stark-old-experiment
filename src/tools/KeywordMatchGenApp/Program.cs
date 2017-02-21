@@ -16,10 +16,10 @@ namespace KeywordMatchGenApp
                 "class|struct|trait|enum";
 
             var modifiers =
-                "abstract|async|const|extern|immutable|internal|isolated|mutable|new|override|partial|private|protected|public|readonly|scoped|sealed|static|transient|unsafe|virtual|volatile";
+                "abstract|async|const|extern|fixed|immutable|internal|isolated|mutable|new|override|partial|private|protected|public|readonly|scoped|static|transient|unsafe|virtual|volatile";
 
             var keywords =
-                "alias|as|await|base|break|constructor|default|else|extends|false|fatal|fixed|for|from|func|get|if|implements|import|in|is|let|match|meta|module|operator|out|package|params|permanent|ref|requires|return|set|sizeof|this|throw|true|typeof|value|var|where|while|with";
+                "alias|as|await|base|break|constructor|default|else|extends|false|fatal|for|from|func|get|if|implements|import|in|is|let|match|meta|module|operator|out|package|params|ref|requires|return|set|sizeof|this|throw|true|typeof|value|var|where|while|with";
 
             var text = modifiers + "|" + keywords + "|" + types;
             var entries = text.Split('|');
