@@ -120,8 +120,8 @@ ModuleFullName: ModulePath ModuleName
 // TODO: Add extern to c-library/dllimport
 ExternDirective: ExternPackageDirective
                ;
-
-ExternPackageDirective: 'extern' 'package' Package ('as' Package) Eod;
+               
+ExternPackageDirective: 'extern' 'package' Package Eod;
 
 // note that this:: or base:: modules are not supported for a Package
 Package: ModuleFullName;
