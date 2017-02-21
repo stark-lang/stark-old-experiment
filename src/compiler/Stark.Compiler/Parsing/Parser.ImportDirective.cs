@@ -52,6 +52,11 @@ namespace Stark.Compiler.Parsing
                 return false;
             }
 
+            if (importPath == null)
+            {
+                importPath = Open<ImportPath>();
+            }
+
             ImportNameOrAlias importNameOrAlias;
 
             if (TryParseImportNameOrAlias(out importNameOrAlias))
@@ -172,6 +177,12 @@ namespace Stark.Compiler.Parsing
                 return false;
             }
 
+            // If there was no ModulePath, we still need a ModuleFullName
+            if (modulePath == null)
+            {
+                modulePath = Open<T>();
+            }
+
             if (_token.Type != TokenType.Identifier)
             {
                 LogError($"Unexpected token [{ToPrintable(_token)}]. Expecting an identifier while parsing a full module name");
@@ -191,8 +202,8 @@ namespace Stark.Compiler.Parsing
 
         private bool TryParseModulePath<T>(bool allowThisAndBase, out T modulePath) where T : ModulePath, new()
         {
-            modulePath = Open<T>();
-
+            modulePath = null;
+            var startToken = _token;
             // Skip any newlines when parsing a module path
             // as the module path is not used alone (it always expect a trailing ::)
             BeginSkipNewLines();
@@ -202,15 +213,20 @@ namespace Stark.Compiler.Parsing
             {
                 if (_token.Type == TokenType.This)
                 {
-                    modulePath.Items.Add(new SyntaxValueNode<string>(_token, "this"));
+                    var node = new SyntaxValueNode<string>(_token, "this");
                     NextToken();
                     isValidPath = ExpectDoubleColon("module path after 'this'");
+                    if (isValidPath)
+                    {
+                        modulePath = Open<T>(startToken);
+                        modulePath.Items.Add(node);
+                    }
                 }
                 else
                 {
                     while (_token.Type == TokenType.Base)
                     {
-                        modulePath.Items.Add(new SyntaxValueNode<string>(_token, "base"));
+                        var node = new SyntaxValueNode<string>(_token, "base");
                         NextToken();
                         var isFollowedByColon = ExpectDoubleColon("module path after 'base'");
                         if (!isFollowedByColon)
@@ -218,6 +234,11 @@ namespace Stark.Compiler.Parsing
                             isValidPath = false;
                             break;
                         }
+                        if (modulePath == null)
+                        {
+                            modulePath = Open<T>(startToken);
+                        }
+                        modulePath.Items.Add(node);
                     }
                 }
             }
@@ -228,7 +249,7 @@ namespace Stark.Compiler.Parsing
                 while (_token.Type == TokenType.Identifier && PreviewToken(1).Type == TokenType.Colon && PreviewToken(2).Type == TokenType.Colon)
                 {
                     var id = ToText(_token);
-                    modulePath.Items.Add(new SyntaxValueNode<string>(_token, id));
+                    var node = new SyntaxValueNode<string>(_token, id);
                     NextToken(); // Skip identifier
 
                     // We verify that we have an exact :: following it (as the Preview may introduce spaces, we need to check that it is actually a plain ::
@@ -237,15 +258,25 @@ namespace Stark.Compiler.Parsing
                         isValidPath = false;
                         break;
                     }
+
+                    if (modulePath == null)
+                    {
+                        modulePath = Open<T>(startToken);
+                    }
+                    modulePath.Items.Add(node);
                 }
             }
 
             // Restore newlines parsing
             EndSkipNewLines();
 
-            if (isValidPath)
+            if (isValidPath && modulePath != null)
             {
                 Close(modulePath);
+            }
+            else
+            {
+                modulePath = null;
             }
 
             return isValidPath;
